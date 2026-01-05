@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.contrib.auth.models import User
 from django.core import mail
@@ -6,7 +6,8 @@ from django.utils import timezone
 from datetime import timedelta
 from .models import UserProfile
 import uuid
-
+from axes.models import AccessAttempt
+import time
 
 class RegistrationTests(TestCase):
 
@@ -104,7 +105,7 @@ class DashboardUpdateTests(TestCase):
             verification_token=uuid.uuid4(),
             verification_token_expires=timezone.now() + timedelta(hours=24)
         )
-        self.client.login(username='user1', password='StrongPass123!')
+        self.client.force_login(self.user)
 
     def test_update_username_email(self):
         self.client.post(reverse('login:dash'), {
@@ -146,7 +147,7 @@ class EmailVerificationTests(TestCase):
             verification_token=uuid.uuid4(),
             verification_token_expires=timezone.now() + timedelta(hours=24)
         )
-        self.client.login(username='user1', password='StrongPass123!')
+        self.client.force_login(self.user)
 
     def test_verification_email_sent(self):
         self.client.post(reverse('login:dash'), {
@@ -221,7 +222,7 @@ class LogoutTests(TestCase):
             verification_token=uuid.uuid4(),
             verification_token_expires=timezone.now() + timedelta(hours=24)
         )
-        self.client.login(username='user1', password='StrongPass123!')
+        self.client.force_login(self.user)
 
     def test_logout(self):
         response = self.client.post(
@@ -237,3 +238,86 @@ class LogoutTests(TestCase):
         response = self.client.get(reverse('login:dash'))
         self.assertEqual(response.status_code, 302)
 
+
+class BruteForceProtectionTests(TestCase):
+
+    def setUp(self):
+        self.username = 'victim_user'
+        self.password = 'StrongPass123!'
+        self.user = User.objects.create_user(
+            username=self.username,
+            password=self.password
+        )
+        self.login_url = reverse('login:login')
+
+    def test_axes_lockout_after_five_attempts(self):
+        # Perform 5 failed login attempts
+        for _ in range(5):
+            response = self.client.post(self.login_url, {
+                'buton_login': 'buton_login',
+                'username_login': self.username,
+                'password_login': 'WrongPassword'
+            })
+            if _ < 4:
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, 'Invalid credentials')
+
+        # Block on 6th attempt
+        response = self.client.post(self.login_url, {
+            'buton_login': 'buton_login',
+            'username_login': self.username,
+            'password_login': self.password
+        })
+
+        self.assertEqual(response.status_code, 429)  # Too Many Requests
+
+    def test_axes_reset_on_success(self):
+        # Perform 3 failed login attempts
+        for _ in range(3):
+            self.client.post(self.login_url, {
+                'buton_login': 'buton_login',
+                'username_login': self.username,
+                'password_login': 'WrongPassword'
+            })
+        
+        self.assertEqual(AccessAttempt.objects.filter(username=self.username).count(), 1)
+        self.assertEqual(AccessAttempt.objects.get(username=self.username).failures_since_start, 3)
+
+        # Login
+        self.client.post(self.login_url, {
+            'buton_login': 'buton_login',
+            'username_login': self.username,
+            'password_login': self.password
+        })
+
+        # Check attempts reset
+        self.assertEqual(AccessAttempt.objects.filter(username=self.username).count(), 0)
+
+    @override_settings(AXES_COOLOFF_TIME=0.0001)
+    def test_axes_cooloff_period(self):
+        # Trigger lockout
+        for _ in range(5):
+            self.client.post(self.login_url, {
+                'buton_login': 'buton_login',
+                'username_login': self.username,
+                'password_login': 'Wrong'
+            })
+            
+        # Verify locked
+        response = self.client.post(self.login_url, {
+            'buton_login': 'buton_login',
+            'username_login': self.username,
+            'password_login': self.password
+        })
+        self.assertEqual(response.status_code, 429) # Too Many Requests
+
+        # Cooloff
+        time.sleep(1) 
+
+        # Should be able to login now
+        response = self.client.post(self.login_url, {
+            'buton_login': 'buton_login',
+            'username_login': self.username,
+            'password_login': self.password
+        })
+        self.assertEqual(response.status_code, 302)

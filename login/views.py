@@ -14,7 +14,9 @@ import uuid
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
 import secrets
+from axes.decorators import axes_dispatch
 
+@axes_dispatch
 def login_view(request):
     form = RegistrationForm(request.POST or None)
     

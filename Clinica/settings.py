@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'axes',
 ]
 
 # Email settings
@@ -50,6 +51,11 @@ EMAIL_HOST_USER = 'bardirobert1@gmail.com'  # Your email address
 EMAIL_HOST_PASSWORD = 'ejca cvmy swmk skgd'  # Your email password
 DEFAULT_FROM_EMAIL = 'bardirobert1@gmail.com'  # Default from email address
 
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -58,6 +64,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'axes.middleware.AxesMiddleware',
 ]
 
 ROOT_URLCONF = 'Clinica.urls'
@@ -153,3 +160,9 @@ X_FRAME_OPTIONS = 'DENY'
 
 # Session expiration on browser close
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+# Axes configuration
+AXES_FAILURE_LIMIT = 5
+AXES_COOLOFF_TIME = 0.5  # in hours
+AXES_LOCKOUT_PARAMETERS = ['ip_address', 'username']
+AXES_RESET_ON_SUCCESS = True
