@@ -66,20 +66,20 @@ class LoginTests(TestCase):
     def test_login_success(self):
         response = self.client.post(reverse('login:login'), {
             'buton_login': 'buton_login',
-            'username_login': 'user1',
-            'password_login': 'StrongPass123!'
+            'username': 'user1',
+            'password': 'StrongPass123!'
         })
-
         self.assertEqual(response.status_code, 302)
 
     def test_login_invalid_credentials(self):
         response = self.client.post(reverse('login:login'), {
             'buton_login': 'buton_login',
-            'username_login': 'user1',
-            'password_login': 'WrongPassword'
+            'username': 'user1',
+            'password': 'WrongPassword'
         })
-
-        self.assertContains(response, 'Invalid credentials')
+        self.assertContains(response, 'Invalid email or password.')
+        self.assertIn('login_form', response.context)
+        self.assertIn('registration_form', response.context)
 
 
 class DashboardAccessTests(TestCase):
@@ -98,7 +98,7 @@ class DashboardUpdateTests(TestCase):
             email='old@test.com',
             password='StrongPass123!'
         )
-        self.profile = UserProfile.objects.create(
+        UserProfile.objects.create(
             user=self.user,
             user_type='patient',
             code='0000',
@@ -255,18 +255,18 @@ class BruteForceProtectionTests(TestCase):
         for _ in range(5):
             response = self.client.post(self.login_url, {
                 'buton_login': 'buton_login',
-                'username_login': self.username,
-                'password_login': 'WrongPassword'
+                'username': self.username,
+                'password': 'WrongPassword'
             })
             if _ < 4:
                 self.assertEqual(response.status_code, 200)
-                self.assertContains(response, 'Invalid credentials')
+                self.assertContains(response, 'Invalid email or password.')
 
         # Block on 6th attempt
         response = self.client.post(self.login_url, {
             'buton_login': 'buton_login',
-            'username_login': self.username,
-            'password_login': self.password
+            'username': self.username,
+            'password': self.password
         })
 
         self.assertEqual(response.status_code, 429)  # Too Many Requests
@@ -276,8 +276,8 @@ class BruteForceProtectionTests(TestCase):
         for _ in range(3):
             self.client.post(self.login_url, {
                 'buton_login': 'buton_login',
-                'username_login': self.username,
-                'password_login': 'WrongPassword'
+                'username': self.username,
+                'password': 'WrongPassword'
             })
         
         self.assertEqual(AccessAttempt.objects.filter(username=self.username).count(), 1)
@@ -286,8 +286,8 @@ class BruteForceProtectionTests(TestCase):
         # Login
         self.client.post(self.login_url, {
             'buton_login': 'buton_login',
-            'username_login': self.username,
-            'password_login': self.password
+            'username': self.username,
+            'password': self.password
         })
 
         # Check attempts reset
@@ -299,15 +299,15 @@ class BruteForceProtectionTests(TestCase):
         for _ in range(5):
             self.client.post(self.login_url, {
                 'buton_login': 'buton_login',
-                'username_login': self.username,
-                'password_login': 'Wrong'
+                'username': self.username,
+                'password': 'Wrong'
             })
             
         # Verify locked
         response = self.client.post(self.login_url, {
             'buton_login': 'buton_login',
-            'username_login': self.username,
-            'password_login': self.password
+            'username': self.username,
+            'password': self.password
         })
         self.assertEqual(response.status_code, 429) # Too Many Requests
 
@@ -317,7 +317,7 @@ class BruteForceProtectionTests(TestCase):
         # Should be able to login now
         response = self.client.post(self.login_url, {
             'buton_login': 'buton_login',
-            'username_login': self.username,
-            'password_login': self.password
+            'username': self.username,
+            'password': self.password
         })
         self.assertEqual(response.status_code, 302)

@@ -10,6 +10,7 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from .forms.registerform import RegistrationForm
 from .forms.updateform import AccountUpdateForm
+from .forms.loginform import LoginForm
 import uuid
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
@@ -18,30 +19,41 @@ from axes.decorators import axes_dispatch
 
 @axes_dispatch
 def login_view(request):
-    form = RegistrationForm(request.POST or None)
+    registration_form = RegistrationForm(request.POST or None)
+    login_form = LoginForm(request.POST or None)
     
+    context = {
+        'registration_form': registration_form,
+        'login_form': login_form,
+        'message': ''
+    }
+
     if request.method == 'POST':
         # Handle Login
         if 'buton_login' in request.POST:
-            username_login = request.POST.get('username_login')
-            password_login = request.POST.get('password_login')
-            user = authenticate(request, username=username_login, password=password_login)
-            if user:
-                login(request, user)
-                return HttpResponseRedirect(reverse('login:Test'))
-            return render(request, 'login/login.html', {'message': 'Invalid credentials.', 'form': form})
+            if login_form.is_valid():
+                username = login_form.cleaned_data['username']
+                password = login_form.cleaned_data['password']
+                # Correctly passing request for django-axes
+                user = authenticate(request, username=username, password=password)
+                if user:
+                    login(request, user)
+                    return HttpResponseRedirect(reverse('login:Test'))
+                context['message'] = 'Invalid email or password.'
+            else:
+                context['message'] = 'Invalid login input.'
 
         # Handle Registration
         elif 'buton_register' in request.POST:
-            if form.is_valid():
+            if registration_form.is_valid():
                 try:
-                    user = form.save(commit=False)
-                    user.set_password(form.cleaned_data['password'])
+                    user = registration_form.save(commit=False)
+                    user.set_password(registration_form.cleaned_data['password'])
                     user.save()
                     # Prevent forced logout after password change
                     update_session_auth_hash(request, user)
 
-                    user_type = form.cleaned_data['user_type']
+                    user_type = registration_form.cleaned_data['user_type']
                     if user_type == 'doctor':
                         code = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(10))
                     else:
@@ -61,9 +73,10 @@ def login_view(request):
                     login(request, user)
                     return HttpResponseRedirect(reverse('login:Test'))
                 except Exception:
-                    return render(request, 'login/login.html', {'message': 'Internal Error', 'form': form})
-
-    return render(request, 'login/login.html', {'form': form})
+                    context['message'] = 'Internal Error'
+            else:
+                context['message'] = 'Registration form error.'
+    return render(request, 'login/login.html', context)
 
 
 def logout_view(request):
