@@ -135,6 +135,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Force HTTPs cookies
 SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_SAMESITE = 'Strict'
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
 
@@ -149,3 +150,6 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # Clickjacking protection
 X_FRAME_OPTIONS = 'DENY'
+
+# Session expiration on browser close
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True

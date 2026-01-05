@@ -1,3 +1,6 @@
+from datetime import timedelta
+import string
+from django.utils import timezone
 from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect,HttpResponse
 from django.urls import reverse
@@ -7,9 +10,10 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from .forms.registerform import RegistrationForm
 from .forms.updateform import AccountUpdateForm
-import uuid, random, string
+import uuid
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
+import secrets
 
 def login_view(request):
     form = RegistrationForm(request.POST or None)
@@ -36,13 +40,20 @@ def login_view(request):
                     update_session_auth_hash(request, user)
 
                     user_type = form.cleaned_data['user_type']
-                    code = ''.join(random.choices(string.ascii_letters + string.digits, k=10)) if user_type == 'doctor' else '0000'
+                    if user_type == 'doctor':
+                        code = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(10))
+                    else:
+                        code = '0000'
+
+                    # Generate token with expiration
+                    verification_expires = timezone.now() + timedelta(hours=24)
                     
                     UserProfile.objects.create(
                         user=user,
                         user_type=user_type,
                         code=code,
-                        verification_token=uuid.uuid4()
+                        verification_token=uuid.uuid4(),
+                        verification_token_expires=verification_expires
                     )
                     
                     login(request, user)
@@ -71,14 +82,15 @@ def dash_view(request):
         if 'Logout' in request.POST:
             return redirect('login:logout')
 
-        # Resend verification email
+        # Send verification email
         if 'email_resend' in request.POST:
             user_profile.verification_token = uuid.uuid4()
+            user_profile.verification_token_expires = timezone.now() + timedelta(hours=24)
             user_profile.save()
 
             send_mail(
                 'Verify your email address',
-                f'Please click the link to verify your email address: '
+                f'Please click the link to verify your email address. This link will expire in 24 hours. '
                 f'http://127.0.0.1:8000/users/verify-email/{user_profile.verification_token}/',
                 'no-reply@yourapp.com',
                 [user.email],
@@ -133,9 +145,24 @@ def dash_view(request):
 
 def verify_email(request,token):
     user_profile = get_object_or_404(UserProfile, verification_token=token)
+    
+    # Check if token has expired
+    if user_profile.verification_token_expires and user_profile.verification_token_expires < timezone.now():
+        return HttpResponse(
+            'This verification link has expired. '
+            'Please log in and request a new verification email.'
+        )
+    
+    # Check if already verified
+    if user_profile.email_verified:
+        return HttpResponse('Email already verified.')
+    
     user_profile.email_verified = True
+    user_profile.verification_token = None  # Invalidate token
+    user_profile.verification_token_expires = None
     user_profile.save()
-    return HttpResponse('Email verified successfully. You can now log in.')
+    
+    return HttpResponse('Email verified successfully!')
 
 
 def Test(request):

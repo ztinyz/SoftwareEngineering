@@ -2,6 +2,8 @@ from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
 from django.core import mail
+from django.utils import timezone
+from datetime import timedelta
 from .models import UserProfile
 import uuid
 
@@ -9,7 +11,7 @@ import uuid
 class RegistrationTests(TestCase):
 
     def test_user_registration_patient(self):
-        response = self.client.post(reverse('login:login'), {
+        self.client.post(reverse('login:login'), {
             'buton_register': 'buton_register',
             'username': 'patient1',
             'email': 'patient@test.com',
@@ -25,6 +27,8 @@ class RegistrationTests(TestCase):
         self.assertEqual(profile.user_type, 'patient')
         self.assertEqual(profile.code, '0000')
         self.assertTrue(user.check_password('StrongPass123!'))
+        self.assertIsNotNone(profile.verification_token_expires)
+        self.assertTrue(profile.verification_token_expires > timezone.now())
 
     def test_doctor_registration_code_generated(self):
         self.client.post(reverse('login:login'), {
@@ -39,13 +43,23 @@ class RegistrationTests(TestCase):
         profile = UserProfile.objects.get(user__username='doctor1')
         self.assertNotEqual(profile.code, '0000')
         self.assertEqual(len(profile.code), 10)
+        self.assertTrue(profile.code.isalnum())
+
 
 class LoginTests(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
             username='user1',
+            email='test@test.com',
             password='StrongPass123!'
+        )
+        UserProfile.objects.create(
+            user=self.user,
+            user_type='patient',
+            code='0000',
+            verification_token=uuid.uuid4(),
+            verification_token_expires=timezone.now() + timedelta(hours=24)
         )
 
     def test_login_success(self):
@@ -65,6 +79,7 @@ class LoginTests(TestCase):
         })
 
         self.assertContains(response, 'Invalid credentials')
+
 
 class DashboardAccessTests(TestCase):
 
@@ -86,12 +101,13 @@ class DashboardUpdateTests(TestCase):
             user=self.user,
             user_type='patient',
             code='0000',
-            verification_token=uuid.uuid4()
+            verification_token=uuid.uuid4(),
+            verification_token_expires=timezone.now() + timedelta(hours=24)
         )
         self.client.login(username='user1', password='StrongPass123!')
 
     def test_update_username_email(self):
-        response = self.client.post(reverse('login:dash'), {
+        self.client.post(reverse('login:dash'), {
             'username': 'newuser',
             'email': 'new@test.com',
         })
@@ -127,17 +143,19 @@ class EmailVerificationTests(TestCase):
             user=self.user,
             user_type='patient',
             code='0000',
-            verification_token=uuid.uuid4()
+            verification_token=uuid.uuid4(),
+            verification_token_expires=timezone.now() + timedelta(hours=24)
         )
         self.client.login(username='user1', password='StrongPass123!')
 
     def test_verification_email_sent(self):
-        response = self.client.post(reverse('login:dash'), {
+        self.client.post(reverse('login:dash'), {
             'email_resend': 'email_resend'
         })
 
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('Verify your email address', mail.outbox[0].subject)
+        self.assertIn('This link will expire in 24 hours', mail.outbox[0].body)
 
     def test_verify_email_token(self):
         token = self.profile.verification_token
@@ -147,6 +165,45 @@ class EmailVerificationTests(TestCase):
 
         self.profile.refresh_from_db()
         self.assertTrue(self.profile.email_verified)
+        self.assertIsNone(self.profile.verification_token)
+        self.assertIsNone(self.profile.verification_token_expires)
+        self.assertContains(response, 'Email verified successfully')
+
+    def test_verify_email_expired_token(self):
+        self.profile.verification_token_expires = timezone.now() - timedelta(hours=1)
+        self.profile.save()
+
+        token = self.profile.verification_token
+        response = self.client.get(
+            reverse('login:verify_email', args=[token])
+        )
+
+        self.profile.refresh_from_db()
+        self.assertFalse(self.profile.email_verified)
+        self.assertContains(response, 'expired')
+
+    def test_verify_email_already_verified(self):
+        self.profile.email_verified = True
+        self.profile.save()
+
+        token = self.profile.verification_token
+        response = self.client.get(
+            reverse('login:verify_email', args=[token])
+        )
+
+        self.assertContains(response, 'already verified')
+
+    def test_resend_generates_new_token(self):
+        old_token = self.profile.verification_token
+        old_expires = self.profile.verification_token_expires
+
+        self.client.post(reverse('login:dash'), {
+            'email_resend': 'email_resend'
+        })
+
+        self.profile.refresh_from_db()
+        self.assertNotEqual(self.profile.verification_token, old_token)
+        self.assertTrue(self.profile.verification_token_expires > old_expires)
 
 
 class LogoutTests(TestCase):
@@ -154,13 +211,15 @@ class LogoutTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
             username='user1',
+            email='test@test.com',
             password='StrongPass123!'
         )
         UserProfile.objects.create(
             user=self.user,
             user_type='patient',
             code='0000',
-            verification_token=uuid.uuid4()
+            verification_token=uuid.uuid4(),
+            verification_token_expires=timezone.now() + timedelta(hours=24)
         )
         self.client.login(username='user1', password='StrongPass123!')
 
