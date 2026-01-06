@@ -10,41 +10,58 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from .forms.registerform import RegistrationForm
 from .forms.updateform import AccountUpdateForm
+from .forms.captchaform import LoginCaptchaForm, RegisterCaptchaForm
 from .forms.loginform import LoginForm
 import uuid
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
 import secrets
 from axes.decorators import axes_dispatch
+from django.conf import settings
 
 @axes_dispatch
 def login_view(request):
     registration_form = RegistrationForm(request.POST or None)
     login_form = LoginForm(request.POST or None)
+    login_captcha_form = LoginCaptchaForm(request.POST or None, prefix="login")
+    register_captcha_form = RegisterCaptchaForm(request.POST or None, prefix="register")
     
     context = {
         'registration_form': registration_form,
         'login_form': login_form,
+        'login_captcha_form': login_captcha_form,
+        'register_captcha_form': register_captcha_form,
         'message': ''
     }
 
     if request.method == 'POST':
         # Handle Login
         if 'buton_login' in request.POST:
-            if login_form.is_valid():
-                username = login_form.cleaned_data['username']
-                password = login_form.cleaned_data['password']
-                # Correctly passing request for django-axes
-                user = authenticate(request, username=username, password=password)
-                if user:
-                    login(request, user)
-                    return HttpResponseRedirect(reverse('login:Test'))
+            if not login_form.is_valid():
                 context['message'] = 'Invalid email or password.'
-            else:
-                context['message'] = 'Invalid login input.'
+                return render(request, 'login/login.html', context)
+            if not login_captcha_form.is_valid():
+                context['message'] = 'Invalid CAPTCHA.'
+                return render(request, 'login/login.html', context)
+
+            username = login_form.cleaned_data['username']
+            password = login_form.cleaned_data['password']
+
+            user = authenticate(request, username=username, password=password)
+
+            if not user:
+                context['message'] = 'Invalid email or password.'
+                return render(request, 'login/login.html', context)
+
+            login(request, user)
+            return HttpResponseRedirect(reverse('login:Test'))
 
         # Handle Registration
         elif 'buton_register' in request.POST:
+            if not register_captcha_form.is_valid():
+                context['message'] = 'Invalid CAPTCHA.'
+                return render(request, 'login/login.html', context)
+            
             if registration_form.is_valid():
                 try:
                     user = registration_form.save(commit=False)

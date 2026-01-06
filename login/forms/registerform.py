@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from hcaptcha.fields import hCaptchaField
 
 class RegistrationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput, validators=[validate_password])
@@ -9,6 +10,7 @@ class RegistrationForm(forms.ModelForm):
     user_type = forms.ChoiceField(choices=(('patient', 'Patient'), ('doctor', 'Doctor')))
     first_name = forms.CharField(required=False)
     last_name = forms.CharField(required=False)
+    hcaptcha = hCaptchaField()
 
     class Meta:
         model = User

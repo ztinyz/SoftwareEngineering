@@ -1,4 +1,5 @@
 from django import forms
+from hcaptcha.fields import hCaptchaField
 
 class LoginForm(forms.Form):
     username = forms.CharField(
@@ -10,3 +11,4 @@ class LoginForm(forms.Form):
         required=True,
         widget=forms.PasswordInput(attrs={'placeholder': 'Password'})
     )
+    hcaptcha = hCaptchaField()

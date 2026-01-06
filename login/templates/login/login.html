@@ -59,10 +59,10 @@
          
                      <i class="ri-eye-off-fill login__icon login__password" id="loginPassword"></i>
                   </div>
+                  <a href="#" class="login__forgot">Forgot your password?</a>
+                  {{ login_captcha_form.hcaptcha }}
                </div>
-      
-               <a href="#" class="login__forgot">Forgot your password?</a>
-      
+               
                <button type="submit" class="login__button" name="buton_login" value="buton_login">Login</button>
             </form>
    
@@ -139,6 +139,7 @@
                         </option>
                      </select>
                   </label>
+                  {{ register_captcha_form.hcaptcha }}
                </div>
                <button type="submit" class="login__button" name="buton_register" value="buton_register">Create account</button>
             </form>

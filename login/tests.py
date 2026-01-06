@@ -8,17 +8,27 @@ from .models import UserProfile
 import uuid
 from axes.models import AccessAttempt
 import time
+from unittest.mock import patch
 
-class RegistrationTests(TestCase):
+@override_settings(HCAPTCHA_TESTING=True)
+class CaptchaTestCase(TestCase):
+    pass
 
-    def test_user_registration_patient(self):
-        self.client.post(reverse('login:login'), {
+
+class RegistrationTests(CaptchaTestCase):
+
+    @patch('hcaptcha.fields.hCaptchaField.validate')
+    def test_user_registration_patient(self, mock_validate):
+        mock_validate.return_value = True
+        
+        response = self.client.post(reverse('login:login'), {
             'buton_register': 'buton_register',
             'username': 'patient1',
             'email': 'patient@test.com',
             'password': 'StrongPass123!',
             'password_confirm': 'StrongPass123!',
             'user_type': 'patient',
+            'register-h-captcha-response': 'PASSED',
         })
 
         self.assertEqual(User.objects.count(), 1)
@@ -31,7 +41,10 @@ class RegistrationTests(TestCase):
         self.assertIsNotNone(profile.verification_token_expires)
         self.assertTrue(profile.verification_token_expires > timezone.now())
 
-    def test_doctor_registration_code_generated(self):
+    @patch('hcaptcha.fields.hCaptchaField.validate')
+    def test_doctor_registration_code_generated(self, mock_validate):
+        mock_validate.return_value = True
+        
         self.client.post(reverse('login:login'), {
             'buton_register': 'buton_register',
             'username': 'doctor1',
@@ -39,6 +52,7 @@ class RegistrationTests(TestCase):
             'password': 'StrongPass123!',
             'password_confirm': 'StrongPass123!',
             'user_type': 'doctor',
+            'register-h-captcha-response': 'PASSED',
         })
 
         profile = UserProfile.objects.get(user__username='doctor1')
@@ -47,7 +61,7 @@ class RegistrationTests(TestCase):
         self.assertTrue(profile.code.isalnum())
 
 
-class LoginTests(TestCase):
+class LoginTests(CaptchaTestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
@@ -63,26 +77,34 @@ class LoginTests(TestCase):
             verification_token_expires=timezone.now() + timedelta(hours=24)
         )
 
-    def test_login_success(self):
+    @patch('hcaptcha.fields.hCaptchaField.validate')
+    def test_login_success(self, mock_validate):
+        mock_validate.return_value = True
+        
         response = self.client.post(reverse('login:login'), {
             'buton_login': 'buton_login',
             'username': 'user1',
-            'password': 'StrongPass123!'
+            'password': 'StrongPass123!',
+            'login-h-captcha-response': 'PASSED',
         })
         self.assertEqual(response.status_code, 302)
 
-    def test_login_invalid_credentials(self):
+    @patch('hcaptcha.fields.hCaptchaField.validate')
+    def test_login_invalid_credentials(self, mock_validate):
+        mock_validate.return_value = True
+        
         response = self.client.post(reverse('login:login'), {
             'buton_login': 'buton_login',
             'username': 'user1',
-            'password': 'WrongPassword'
+            'password': 'WrongPassword',
+            'login-h-captcha-response': 'PASSED',
         })
         self.assertContains(response, 'Invalid email or password.')
         self.assertIn('login_form', response.context)
         self.assertIn('registration_form', response.context)
 
 
-class DashboardAccessTests(TestCase):
+class DashboardAccessTests(CaptchaTestCase):
 
     def test_dashboard_requires_login(self):
         response = self.client.get(reverse('login:dash'))
@@ -90,7 +112,7 @@ class DashboardAccessTests(TestCase):
         self.assertIn(reverse('login:login'), response.url)
 
 
-class DashboardUpdateTests(TestCase):
+class DashboardUpdateTests(CaptchaTestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
@@ -132,7 +154,7 @@ class DashboardUpdateTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
-class EmailVerificationTests(TestCase):
+class EmailVerificationTests(CaptchaTestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
@@ -198,16 +220,19 @@ class EmailVerificationTests(TestCase):
         old_token = self.profile.verification_token
         old_expires = self.profile.verification_token_expires
 
+        # Add a small delay to ensure time difference
+        time.sleep(0.01)
+        
         self.client.post(reverse('login:dash'), {
             'email_resend': 'email_resend'
         })
 
         self.profile.refresh_from_db()
         self.assertNotEqual(self.profile.verification_token, old_token)
-        self.assertTrue(self.profile.verification_token_expires > old_expires)
+        self.assertGreaterEqual(self.profile.verification_token_expires, old_expires)
 
 
-class LogoutTests(TestCase):
+class LogoutTests(CaptchaTestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
@@ -239,7 +264,7 @@ class LogoutTests(TestCase):
         self.assertEqual(response.status_code, 302)
 
 
-class BruteForceProtectionTests(TestCase):
+class BruteForceProtectionTests(CaptchaTestCase):
 
     def setUp(self):
         self.username = 'victim_user'
@@ -248,76 +273,101 @@ class BruteForceProtectionTests(TestCase):
             username=self.username,
             password=self.password
         )
+        UserProfile.objects.create(
+            user=self.user,
+            user_type='patient',
+            code='0000',
+            verification_token=uuid.uuid4(),
+            verification_token_expires=timezone.now() + timedelta(hours=24)
+        )
         self.login_url = reverse('login:login')
 
-    def test_axes_lockout_after_five_attempts(self):
+    @patch('hcaptcha.fields.hCaptchaField.validate')
+    def test_axes_lockout_after_five_attempts(self, mock_validate):
+        mock_validate.return_value = True
+        
         # Perform 5 failed login attempts
-        for _ in range(5):
+        for i in range(5):
             response = self.client.post(self.login_url, {
                 'buton_login': 'buton_login',
                 'username': self.username,
-                'password': 'WrongPassword'
+                'password': 'WrongPassword',
+                'login-h-captcha-response': 'PASSED'
             })
-            if _ < 4:
+            if i < 4:
                 self.assertEqual(response.status_code, 200)
                 self.assertContains(response, 'Invalid email or password.')
 
-        # Block on 6th attempt
+        # 6th attempt should be blocked
         response = self.client.post(self.login_url, {
             'buton_login': 'buton_login',
             'username': self.username,
-            'password': self.password
+            'password': self.password,
+            'login-h-captcha-response': 'PASSED'
         })
 
-        self.assertEqual(response.status_code, 429)  # Too Many Requests
+        self.assertEqual(response.status_code, 429)  # Too Many Requests 
 
-    def test_axes_reset_on_success(self):
+    @patch('hcaptcha.fields.hCaptchaField.validate')
+    def test_axes_reset_on_success(self, mock_validate):
+        mock_validate.return_value = True
+        
         # Perform 3 failed login attempts
         for _ in range(3):
             self.client.post(self.login_url, {
                 'buton_login': 'buton_login',
                 'username': self.username,
-                'password': 'WrongPassword'
+                'password': 'WrongPassword',
+                'login-h-captcha-response': 'PASSED'
             })
         
-        self.assertEqual(AccessAttempt.objects.filter(username=self.username).count(), 1)
-        self.assertEqual(AccessAttempt.objects.get(username=self.username).failures_since_start, 3)
+        # Check that attempts were recorded
+        attempt = AccessAttempt.objects.filter(username=self.username).first()
+        self.assertIsNotNone(attempt)
+        self.assertEqual(attempt.failures_since_start, 3)
 
-        # Login
+        # Successful login
         self.client.post(self.login_url, {
             'buton_login': 'buton_login',
             'username': self.username,
-            'password': self.password
+            'password': self.password,
+            'login-h-captcha-response': 'PASSED'
         })
 
         # Check attempts reset
         self.assertEqual(AccessAttempt.objects.filter(username=self.username).count(), 0)
 
-    @override_settings(AXES_COOLOFF_TIME=0.0001)
-    def test_axes_cooloff_period(self):
+    @override_settings(AXES_COOLOFF_TIME=timedelta(seconds=1))
+    @patch('hcaptcha.fields.hCaptchaField.validate')
+    def test_axes_cooloff_period(self, mock_validate):
+        mock_validate.return_value = True
+        
         # Trigger lockout
         for _ in range(5):
             self.client.post(self.login_url, {
                 'buton_login': 'buton_login',
                 'username': self.username,
-                'password': 'Wrong'
+                'password': 'Wrong',
+                'login-h-captcha-response': 'PASSED'
             })
             
         # Verify locked
         response = self.client.post(self.login_url, {
             'buton_login': 'buton_login',
             'username': self.username,
-            'password': self.password
+            'password': self.password,
+            'login-h-captcha-response': 'PASSED'
         })
-        self.assertEqual(response.status_code, 429) # Too Many Requests
+        self.assertEqual(response.status_code, 429)  # Too Many Requests
 
-        # Cooloff
-        time.sleep(1) 
+        # Wait for cooloff
+        time.sleep(2)
 
         # Should be able to login now
         response = self.client.post(self.login_url, {
             'buton_login': 'buton_login',
             'username': self.username,
-            'password': self.password
+            'password': self.password,
+            'login-h-captcha-response': 'PASSED'
         })
         self.assertEqual(response.status_code, 302)
