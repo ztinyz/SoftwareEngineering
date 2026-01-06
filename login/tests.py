@@ -48,7 +48,7 @@ class RegistrationTests(CaptchaTestCase):
         self.client.post(reverse('login:login'), {
             'buton_register': 'buton_register',
             'username': 'doctor1',
-            'email': 'doctor@test.com',
+            'email': 'doctor@clinica.ro',
             'password': 'StrongPass123!',
             'password_confirm': 'StrongPass123!',
             'user_type': 'doctor',
@@ -60,7 +60,48 @@ class RegistrationTests(CaptchaTestCase):
         self.assertEqual(len(profile.code), 10)
         self.assertTrue(profile.code.isalnum())
 
+    @patch('hcaptcha.fields.hCaptchaField.validate')
+    def test_doctor_registration_requires_clinica_email(self, mock_validate):
+        mock_validate.return_value = True
 
+        # Try registering a doctor with a non-clinica.ro email
+        response = self.client.post(reverse('login:login'), {
+            'buton_register': 'buton_register',
+            'username': 'doctor2',
+            'email': 'doctor@gmail.com',  # Invalid email
+            'password': 'StrongPass123!',
+            'password_confirm': 'StrongPass123!',
+            'user_type': 'doctor',
+            'doctor_code': 'VALIDCODE123',  # assume valid code exists for test
+            'register-h-captcha-response': 'PASSED',
+        })
+
+        # Access the registration form from context
+        form = response.context.get('registration_form')
+        self.assertIsNotNone(form)
+        self.assertIn('Doctors must register with a @clinica.ro email.', form.errors['__all__'])
+
+        # User should not be created
+        self.assertFalse(User.objects.filter(username='doctor2').exists())
+
+        # Register a doctor with a valid @clinica.ro email
+        response = self.client.post(reverse('login:login'), {
+            'buton_register': 'buton_register',
+            'username': 'doctor3',
+            'email': 'doctor@clinica.ro',  # Valid email
+            'password': 'StrongPass123!',
+            'password_confirm': 'StrongPass123!',
+            'user_type': 'doctor',
+            'doctor_code': 'VALIDCODE123',
+            'register-h-captcha-response': 'PASSED',
+        })
+
+        # User should be created
+        self.assertTrue(User.objects.filter(username='doctor3').exists())
+        profile = UserProfile.objects.get(user__username='doctor3')
+        self.assertEqual(profile.user_type, 'doctor')
+
+        
 class LoginTests(CaptchaTestCase):
 
     def setUp(self):
