@@ -1,98 +1,190 @@
 {% extends 'login/navbar.html'%}
-    
 {% load static %}
-<!--Website: wwww.codingdung.com-->
-<!DOCTYPE html>
 
-<html lang="en">
-  
 {% block content %}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
-    <link rel="stylesheet" href="{% static 'login/css/style_dash.css' %}">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css">
 </head>
+
 <style>
-    .headss {
-       padding-top: 10%;
+    /* 1. Use Theme Variables from styles.css */
+    :root {
+      --first-color: hsl(208, 92%, 54%);
+      --first-color-alt: hsl(208, 88%, 50%);
+      --title-color: hsl(220, 68%, 4%);
+      --white-color: hsl(0, 0%, 100%);
+      --text-color: hsl(220, 15%, 66%);
+      --body-color: hsl(0, 0%, 100%);
+      --container-color: hsl(220, 50%, 97%);
+      --body-font: "Montserrat", system-ui;
     }
-   @media (max-width: 600px) {
-    .headss {
-         padding-top: 30%;
+
+    body {
+        background-color: var(--body-color);
+        font-family: var(--body-font);
+        color: var(--text-color);
     }
-}
+
+    .headss {
+        padding-top: 10%;
+        color: var(--title-color);
+        font-weight: 700;
+        font-size: 2rem;
+    }
+
+    @media (max-width: 600px) {
+        .headss { padding-top: 30%; }
+    }
+
+    /* 2. Style the Card to match .login__box logic */
+    .card {
+        background-color: var(--white-color);
+        border: none;
+        border-radius: 1.5rem;
+        box-shadow: 0 4px 24px hsla(220, 68%, 4%, .06);
+        overflow: hidden;
+    }
+
+    /* 3. Style Sidebar Links */
+    .account-settings-links .list-group-item {
+        padding: 1.25rem 1.5rem;
+        border: none !important;
+        font-weight: 600;
+        color: var(--text-color);
+        transition: color .4s, background-color .4s;
+    }
+
+    .account-settings-links .list-group-item.active {
+        background-color: var(--container-color) !important;
+        color: var(--first-color) !important;
+    }
+
+    /* 4. Style Inputs to match .login__input */
+    .form-control {
+        background-color: var(--container-color);
+        border: 2px solid transparent;
+        border-radius: 1rem;
+        padding: 1.25rem;
+        font-weight: 600;
+        color: var(--title-color);
+        transition: border-color .4s;
+    }
+
+    .form-control:focus {
+        background-color: var(--container-color);
+        border-color: var(--first-color);
+        outline: none;
+        box-shadow: none;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--title-color);
+        margin-bottom: 0.5rem;
+        font-size: var(--small-font-size);
+    }
+
+    /* 5. Style Buttons like .login__button */
+    .btn-primary {
+        background-color: var(--first-color);
+        border: none;
+        border-radius: 4rem;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        transition: background-color .4s, box-shadow .4s;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--first-color-alt);
+        box-shadow: 0 8px 24px hsla(208, 92%, 32%, .3);
+    }
+
+    .btn-default {
+        background-color: var(--container-color);
+        color: var(--text-color);
+        border-radius: 4rem;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        border: none;
+    }
+
+    /* Resend email button specifically */
+    button[name="email_resend"] {
+        background: none;
+        border: none;
+        color: var(--first-color);
+        font-weight: 700;
+        text-decoration: underline;
+        cursor: pointer;
+    }
 </style>
-<body style="background: linear-gradient(135deg, #cbcbcb, #ffefef); margin-top: 10%; margin-bottom: 10%;">
+
+<body style="background: linear-gradient(135deg, #f0f2f5, #ffffff); margin-bottom: 10%;">
     <div class="container light-style flex-grow-1 container-p-y">
-        <h4 class="headss" >
-            Account settings
-        </h4>
+        <h4 class="headss">Account settings</h4>
+        
         {% if message %}
-        <div>{{ message }}</div>
+        <div class="alert alert-info" style="border-radius: 1rem; font-weight: 600;">{{ message }}</div>
         {% endif %} 
+
         <form action="{% url 'login:dash' %}" method="post">
             {% csrf_token %}
-            <div class="card overflow-hidden">
-                <div class="row no-gutters row-bordered row-border-light">
-                    <div class="col-md-3 pt-0">
+            <div class="card">
+                <div class="row no-gutters">
+                    <div class="col-md-3 pt-0 border-right">
                         <div class="list-group list-group-flush account-settings-links">
-                            <a class="list-group-item list-group-item-action active" data-toggle="list"
-                                href="#account-general">General</a>
-                            <a class="list-group-item list-group-item-action" data-toggle="list"
-                                href="#account-change-password">Change password</a>
-                            <a class="list-group-item list-group-item-action" data-toggle="list"
-                                href="#account-info">Info</a>
-                            <a class="list-group-item list-group-item-action" data-toggle="list"
-                                href="#account-notifications">Notifications</a>
+                            <a class="list-group-item list-group-item-action active" data-toggle="list" href="#account-general">General</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#account-change-password">Change password</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#account-info">Info</a>
+                            <a class="list-group-item list-group-item-action" data-toggle="list" href="#account-notifications">Notifications</a>
                         </div>
                     </div>
                     <div class="col-md-9">
                         <div class="tab-content">
                             <div class="tab-pane fade active show" id="account-general">
-                                <hr class="border-light m-0">
                                 <div class="card-body">
                                     <div class="form-group">
                                         <label class="form-label">Username</label>
-                                        <input type="text" class="form-control mb-1" name="username" value="{{request.user.username}}">
+                                        <input type="text" class="form-control" name="username" value="{{request.user.username}}">
                                     </div>
                                     <div class="form-group">
-                                        <label class="form-label">First_name</label>
+                                        <label class="form-label">First Name</label>
                                         <input type="text" class="form-control" name="first_name" value="{{request.user.first_name}}">
                                     </div>
                                     <div class="form-group">
-                                        <label class="form-label">Last_name</label>
+                                        <label class="form-label">Last Name</label>
                                         <input type="text" class="form-control" name="last_name" value="{{request.user.last_name}}">
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label">E-mail</label>
-                                        <input type="text" class="form-control mb-1" name="email" value="{{request.user.email}}">
+                                        <input type="text" class="form-control" name="email" value="{{request.user.email}}">
+                                        
                                         {% if email_verified == False %}
-                                            <div class="alert alert-warning mt-3">
-                                                Your email is not confirmed. Please check your inbox.<br>
-                                                <button type="submit" name="email_resend" value="email_resend">Resend confirmation</button>
+                                            <div class="alert alert-warning mt-3" style="border-radius: 1rem;">
+                                                Your email is not confirmed. <button type="submit" name="email_resend" value="email_resend">Resend confirmation</button>
                                             </div>
                                         {% endif %}
                                     </div>
-                                    <!--=============== Codul pt pacienti/doctor ===============-->
-                                    
+
                                     {% if user_type == "patient" %}
-                                        <label>
-                                            <input class="input" type="text" placeholder="{{code}}" name="code">
-                                            <span>Assignment Code</span>
-                                        </label> 
-                                        
-                                            Your doctor with the same code: {{doctor}}
+                                        <div class="form-group">
+                                            <label class="form-label">Assignment Code</label>
+                                            <input class="form-control" type="text" placeholder="{{code}}" name="code">
+                                            <small class="text-muted">Your doctor with the same code: <strong>{{doctor}}</strong></small>
+                                        </div> 
                                     {% else %}
                                         <div class="form-group">
-                                            <label class="form-label">Code</label>
-                                            <input type="text" class="form-control" value="{{code}}">
+                                            <label class="form-label">My Doctor Code (Share this with patients)</label>
+                                            <input type="text" class="form-control" value="{{code}}" readonly>
                                         </div>
                                     {% endif %}
-                                    
                                 </div>
                             </div>
+
                             <div class="tab-pane fade" id="account-change-password">
                                 <div class="card-body pb-2">
                                     <div class="form-group">
@@ -105,127 +197,19 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="tab-pane fade" id="account-info">
-                                <div class="card-body pb-2">
-                                    <div class="form-group">
-                                        <label class="form-label">Bio</label>
-                                        <textarea class="form-control"
-                                            rows="5">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris nunc arcu, dignissim sit amet sollicitudin iaculis, vehicula id urna. Sed luctus urna nunc. Donec fermentum, magna sit amet rutrum pretium, turpis dolor molestie diam, ut lacinia diam risus eleifend sapien. Curabitur ac nibh nulla. Maecenas nec augue placerat, viverra tellus non, pulvinar risus.</textarea>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Birthday</label>
-                                        <input type="text" class="form-control" value="May 3, 1995">
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Country</label>
-                                        <select class="custom-select">
-                                            <option>USA</option>
-                                            <option selected>Canada</option>
-                                            <option>UK</option>
-                                            <option>Germany</option>
-                                            <option>France</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <hr class="border-light m-0">
-                                <div class="card-body pb-2">
-                                    <h6 class="mb-4">Contacts</h6>
-                                    <div class="form-group">
-                                        <label class="form-label">Phone</label>
-                                        <input type="text" class="form-control" value="+0 (123) 456 7891">
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Website</label>
-                                        <input type="text" class="form-control" value>
-                                    </div>
-                                </div>
                             </div>
-                            <div class="tab-pane fade" id="account-notifications">
-                                <div class="card-body pb-2">
-                                    <h6 class="mb-4">Activity</h6>
-                                    <div class="form-group">
-                                        <label class="switcher">
-                                            <input type="checkbox" class="switcher-input" checked>
-                                            <span class="switcher-indicator">
-                                                <span class="switcher-yes"></span>
-                                                <span class="switcher-no"></span>
-                                            </span>
-                                            <span class="switcher-label">Email me when someone comments on my article</span>
-                                        </label>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="switcher">
-                                            <input type="checkbox" class="switcher-input" checked>
-                                            <span class="switcher-indicator">
-                                                <span class="switcher-yes"></span>
-                                                <span class="switcher-no"></span>
-                                            </span>
-                                            <span class="switcher-label">Email me when someone answers on my forum
-                                                thread</span>
-                                        </label>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="switcher">
-                                            <input type="checkbox" class="switcher-input">
-                                            <span class="switcher-indicator">
-                                                <span class="switcher-yes"></span>
-                                                <span class="switcher-no"></span>
-                                            </span>
-                                            <span class="switcher-label">Email me when someone follows me</span>
-                                        </label>
-                                    </div>
-                                </div>
-                                <hr class="border-light m-0">
-                                <div class="card-body pb-2">
-                                    <h6 class="mb-4">Application</h6>
-                                    <div class="form-group">
-                                        <label class="switcher">
-                                            <input type="checkbox" class="switcher-input" checked>
-                                            <span class="switcher-indicator">
-                                                <span class="switcher-yes"></span>
-                                                <span class="switcher-no"></span>
-                                            </span>
-                                            <span class="switcher-label">News and announcements</span>
-                                        </label>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="switcher">
-                                            <input type="checkbox" class="switcher-input">
-                                            <span class="switcher-indicator">
-                                                <span class="switcher-yes"></span>
-                                                <span class="switcher-no"></span>
-                                            </span>
-                                            <span class="switcher-label">Weekly product updates</span>
-                                        </label>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="switcher">
-                                            <input type="checkbox" class="switcher-input" checked>
-                                            <span class="switcher-indicator">
-                                                <span class="switcher-yes"></span>
-                                                <span class="switcher-no"></span>
-                                            </span>
-                                            <span class="switcher-label">Weekly blog digest</span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
+            
             <div class="text-right mt-3">
-                <button type="submit" class="btn btn-primary" name="Change" value="Change">Save changes</button>&nbsp;
+                <button type="submit" class="btn btn-primary" name="Change" value="Change">Save changes</button>
                 <button type="button" class="btn btn-default">Cancel</button>
             </div>
-        </div>
-    </form>
+        </form>
+    </div>
+
     <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="text/javascript">
-
-    </script>
 </body>
-
-</html>
 {% endblock %}
