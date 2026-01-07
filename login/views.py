@@ -52,7 +52,7 @@ def login_view(request):
                 
                 if user:
                     login(request, user)
-                    return HttpResponseRedirect(reverse('login:Test'))
+                    return HttpResponseRedirect(reverse('login:dash'))
                 else:
                     context['message'] = 'Invalid username or password.'
             else:
@@ -86,7 +86,7 @@ def login_view(request):
                     verification_expires = timezone.now() + timedelta(hours=24)
                     
                     # Create user profile
-                    user_profile = UserProfile.objects.create(
+                    UserProfile.objects.create(
                         user=user,
                         user_type=user_type,
                         code=code,
@@ -120,7 +120,7 @@ def login_view(request):
                     )
                     if authenticated_user:
                         login(request, authenticated_user)
-                        return HttpResponseRedirect(reverse('login:Test'))
+                        return HttpResponseRedirect(reverse('login:dash'))
                     
                 except Exception as e:
                     print(f"Registration error: {e}")

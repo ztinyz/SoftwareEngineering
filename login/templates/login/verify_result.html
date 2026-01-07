@@ -220,11 +220,8 @@
 
         <div class="button-group">
             {% if show_login %}
-                <a href="{% url 'login:login' %}" class="btn btn-primary">
-                    Go to Login
-                </a>
-                <a href="{% url 'login:Test' %}" class="btn btn-secondary">
-                    Go to Home
+                <a href="{% url 'login:dash' %}" class="btn btn-secondary">
+                    Go to Account Dashboard
                 </a>
             {% endif %}
 
