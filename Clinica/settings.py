@@ -27,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 HCAPTCHA_SITEKEY = os.getenv('HCAPTCHA_SITEKEY')
-HCAPTCHA_SECRETKEY = os.getenv('HCAPTCHA_SECRETKEY')
+HCAPTCHA_SECRET = os.getenv('HCAPTCHA_SECRET')
 HCAPTCHA_TESTING = False
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -58,7 +58,7 @@ EMAIL_PORT = 587 # For TLS
 EMAIL_USE_TLS = True  # Use TLS
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 
 AUTHENTICATION_BACKENDS = [
     'axes.backends.AxesBackend',
