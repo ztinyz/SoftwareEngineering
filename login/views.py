@@ -140,13 +140,8 @@ def login_view(request):
 def logout_view(request):
     """Handle user logout"""
     logout(request)
-    return render(request, 'login/login.html', {
-        'message': 'Logged out.',
-        'registration_form': RegistrationForm(),
-        'login_form': LoginForm(),
-        'login_captcha_form': LoginCaptchaForm(),
-        'register_captcha_form': RegisterCaptchaForm(),
-    })
+    messages.info(request, "You have been successfully logged out.")
+    return redirect('http://127.0.0.1:8000')
 
 
 @login_required(login_url='login:login')
