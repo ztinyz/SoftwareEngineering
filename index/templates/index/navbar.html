@@ -187,28 +187,7 @@
                 </ul>
             </div>
         </div>
-        
-        {% if user.is_authenticated %}
-        <div class="nav-item">
-            <a class="nav-link login__button_nav" href="{% url 'login:dash' %}" 
-               style="padding: 10px 25px; background-color: hsl(208, 92%, 54%); color: white; border-radius: 4rem; font-weight: 600;">
-               Dashboard
-            </a>
-        </div>
-        <div class="nav-item">
-            <form action="{% url 'login:logout' %}" method="post" style="display: inline;">
-                {% csrf_token %}
-                <button type="submit" class="nav-link" 
-                        style="padding: 10px 25px; background-color: #ff4d4d; color: white; border-radius: 4rem; font-weight: 600; border: none; cursor: pointer;">
-                        Logout
-                </button>
-            </form>
-        </div>
-        {% else %}
-            <div class="nav-item">
-                <a href="{% url 'login:login' %}" class="login-button">Login</a>
-            </div>
-        {% endif %}
+        <a href="{% url 'login:login' %}" class="login-button">Login</a>
         <button class="navbar-toggler pe-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar"
             aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>

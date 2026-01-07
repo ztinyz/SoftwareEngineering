@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Create slot (Doctor)</title>
+
+  <style>
+    :root{
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --primary:#0ea5a4;
+      --primary-dark:#0b7f7e;
+      --border:#e5e7eb;
+      --radius:18px;
+      --shadow:0 12px 28px rgba(0,0,0,.10);
+    }
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text);}
+    .container{max-width:900px;margin:26px auto;padding:0 18px;}
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:18px;
+    }
+    .header{
+      display:flex;align-items:center;justify-content:space-between;
+      gap:12px;flex-wrap:wrap;margin-bottom:14px;
+    }
+    h1{margin:0;font-size:34px;}
+    .muted{color:var(--muted);}
+
+    .grid{display:grid;grid-template-columns:repeat(12, 1fr);gap:14px;margin-top:12px;}
+    .col6{grid-column:span 12;}
+    @media(min-width:780px){ .col6{grid-column:span 6;} }
+
+    label{display:block;font-weight:800;margin-bottom:8px;}
+    input{
+      width:100%;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px 12px;
+      font-size:15px;
+      outline:none;
+      background:#fff;
+    }
+    input:focus{
+      border-color:rgba(14,165,164,.55);
+      box-shadow:0 0 0 4px rgba(14,165,164,.12);
+    }
+
+    .actions{display:flex;gap:10px;align-items:center;justify-content:flex-end;margin-top:16px;flex-wrap:wrap;}
+    .btn{
+      background:var(--primary); color:white; border:none;
+      padding:10px 16px; border-radius:999px; font-weight:900;
+      cursor:pointer; text-decoration:none; display:inline-block;
+    }
+    .btn:hover{background:var(--primary-dark);}
+    .btn-ghost{
+      background:transparent; color:var(--text);
+      border:1px solid var(--border);
+    }
+    .btn-ghost:hover{background:#f3f4f6;}
+    .note{
+      margin-top:12px;
+      padding:12px 14px;
+      border:1px dashed var(--border);
+      border-radius:14px;
+      color:var(--muted);
+      background:#fafafa;
+      line-height:1.35;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    {% if messages %}
+      <div class="card" style="margin-bottom:14px;">
+        {% for m in messages %}
+          <div style="margin:6px 0;">{{ m }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="card">
+      <div class="header">
+        <div>
+          <h1>Create slot</h1>
+          <div class="muted">Doctor availability — patients can book these slots.</div>
+        </div>
+        <a class="btn btn-ghost" href="{% url 'appointments:doctor_schedule' %}">Back to schedule</a>
+      </div>
+
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="grid">
+          <div class="col6">
+            <label for="start_time">Start time</label>
+            <input id="start_time" name="start_time" type="datetime-local" required />
+          </div>
+
+          <div class="col6">
+            <label for="end_time">End time</label>
+            <input id="end_time" name="end_time" type="datetime-local" required />
+          </div>
+        </div>
+
+        <div class="note">
+          Tip: Choose a 15–30 minute slot. You can delete free slots from the schedule page.
+        </div>
+
+        <div class="actions">
+          <button class="btn" type="submit">Create</button>
+        </div>
+      </form>
+    </div>
+  </main>
+</body>
+</html>

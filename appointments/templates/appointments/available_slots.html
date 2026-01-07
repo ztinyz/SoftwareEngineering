@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Available slots</title>
+
+  <style>
+    :root{
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --primary:#0ea5a4;
+      --primary-dark:#0b7f7e;
+      --border:#e5e7eb;
+      --radius:18px;
+      --shadow:0 12px 28px rgba(0,0,0,.10);
+    }
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text);}
+    .container{max-width:1100px;margin:26px auto;padding:0 18px;}
+    .top{
+      display:flex;align-items:flex-end;justify-content:space-between;
+      gap:12px;flex-wrap:wrap;margin-bottom:14px;
+    }
+    h1{margin:0;font-size:34px;}
+    .muted{color:var(--muted);}
+
+    .card{
+      background:var(--card);border:1px solid var(--border);
+      border-radius:var(--radius);box-shadow:var(--shadow);
+      padding:18px;
+    }
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;margin-top:12px;}
+    .slot{grid-column:span 12;}
+    @media(min-width:780px){ .slot{grid-column:span 6;} }
+    @media(min-width:1050px){ .slot{grid-column:span 4;} }
+
+    .slot-inner{
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      background:#fff;
+    }
+    .row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;font-weight:900;font-size:12px;background:#dcfce7;color:#166534;}
+    .btn{
+      background:var(--primary); color:white; border:none;
+      padding:10px 14px; border-radius:999px; font-weight:900;
+      cursor:pointer; text-decoration:none; display:inline-block;
+      text-align:center;
+    }
+    .btn:hover{background:var(--primary-dark);}
+    .btn-ghost{
+      background:transparent;color:var(--text);
+      border:1px solid var(--border);
+    }
+    .btn-ghost:hover{background:#f3f4f6;}
+    form{margin:0;}
+     :root{
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --primary:#0ea5a4;
+      --primary-dark:#0b7f7e;
+      --border:#e5e7eb;
+      --shadow:0 18px 40px rgba(0,0,0,.12);
+      --radius:18px;
+    }
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text);}
+    .topbar{
+      padding:14px 18px;
+      position:sticky; top:0; z-index:10;
+      background:linear-gradient(90deg,#ffffff 0%,#ffffff 60%, #f0fffe 100%);
+      border-bottom:1px solid var(--border);
+    }
+    .topbar-inner{
+      max-width:1100px;margin:0 auto;
+      background:#fff;border:1px solid var(--border);
+      border-radius:999px;box-shadow:0 10px 24px rgba(0,0,0,.08);
+      display:flex;gap:12px;align-items:center;justify-content:space-between;
+      padding:10px 16px;
+    }
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800;}
+    .brand .dot{width:12px;height:12px;border-radius:50%;background:var(--primary);}
+    nav a{color:var(--muted);text-decoration:none;margin:0 10px;font-weight:650;}
+    nav a:hover{color:var(--text);}
+    .btn{
+      background:var(--primary); color:white; border:none;
+      padding:10px 16px; border-radius:999px; font-weight:800;
+      cursor:pointer; text-decoration:none; display:inline-block;
+    }
+    .btn:hover{background:var(--primary-dark);}
+    .btn-danger{background:#ef4444;}
+    .btn-danger:hover{background:#dc2626;}
+
+    .container{max-width:1100px;margin:26px auto;padding:0 18px;}
+    .header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+    h1{margin:0;font-size:34px;}
+    .muted{color:var(--muted);}
+
+    .card{
+      background:var(--card);border:1px solid var(--border);
+      border-radius:var(--radius); box-shadow:0 10px 26px rgba(0,0,0,.08);
+      padding:18px;
+    }
+
+    .slot{
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:14px;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-top:12px;
+    }
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;font-weight:800;font-size:12px;}
+    .pill-free{background:#dcfce7;color:#166534;}
+    .pill-booked{background:#fee2e2;color:#991b1b;}
+
+    form{margin:0;}
+  </style>
+</head>
+
+<body>
+    <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="dot"></span>
+        <span>Clinica</span>
+      </div>
+
+      <nav>
+        <a href="/">Home</a>
+        <a href="/appointments/doctor/schedule/">Doctor</a>
+        <a href="/appointments/slots/">Appointments</a>
+      </nav>
+
+      {% if user.is_authenticated %}
+        <a class="btn" href="/logout/">Logout</a>
+      {% else %}
+        <a class="btn" href="/login/">Login</a>
+      {% endif %}
+    </div>
+  </header>
+
+  <main class="container">
+    {% if messages %}
+      <div class="card" style="margin-bottom:14px;">
+        {% for m in messages %}
+          <div style="margin:6px 0;">{{ m }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="top">
+      <div>
+        <h1>Available slots</h1>
+        <div class="muted">Choose a slot and book it.</div>
+      </div>
+      <a class="btn btn-ghost" href="{% url 'appointments:my_appointments' %}">My appointments</a>
+    </div>
+
+    <div class="card">
+      {% if slots %}
+        <div class="grid">
+          {% for s in slots %}
+            <div class="slot">
+              <div class="slot-inner">
+                <div class="row">
+                  <strong>{{ s.start_time }}</strong>
+                  <span class="pill">AVAILABLE</span>
+                </div>
+
+                <div class="muted">Ends: {{ s.end_time }}</div>
+
+                    <form method="post" action="{% url 'appointments:book_slot' s.id %}">
+                  {% csrf_token %}
+                  <button class="btn" type="submit">Book</button>
+                </form>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="muted">No slots available.</p>
+      {% endif %}
+    </div>
+  </main>
+</body>
+</html>
