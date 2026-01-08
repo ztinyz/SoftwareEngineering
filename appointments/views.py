@@ -29,6 +29,8 @@ def my_appointments(request: HttpRequest) -> HttpResponse:
 
 @login_required
 def book(request: HttpRequest, slot_id: int) -> HttpResponse:
+    print("HIT: book view")
+
     if request.method != "POST":
         return redirect("appointments:available_slots")
 
@@ -37,15 +39,30 @@ def book(request: HttpRequest, slot_id: int) -> HttpResponse:
         if slot.status != "available":
             raise ValueError("Slot not available")
 
-        # simplest booking for now:
-        Appointment.objects.create(
+        # create appointment
+        appt = Appointment.objects.create(
             patient=request.user,
             doctor=slot.doctor,
             slot=slot,
             status="booked",
         )
+
+        # mark slot booked
         slot.status = "booked"
         slot.save(update_fields=["status"])
+
+        #  Kafka audit event
+        publish_event(
+            "appointment_booked",
+            {
+                "appointment_id": appt.id,
+                "slot_id": slot.id,
+                "patient_id": request.user.id,
+                "doctor_id": slot.doctor_id,
+                "start_time": slot.start_time.isoformat(),
+                "end_time": slot.end_time.isoformat(),
+            }
+        )
 
         messages.success(request, "Appointment booked.")
     except Exception as e:
@@ -172,6 +189,8 @@ from django.utils import timezone
 
 from .models import AppointmentSlot, Appointment
 
+from .kafka import publish_event   # wherever you put publish_event
+
 @login_required
 def book_slot(request, slot_id: int):
     if request.method != "POST":
@@ -179,21 +198,32 @@ def book_slot(request, slot_id: int):
 
     slot = get_object_or_404(AppointmentSlot, id=slot_id)
 
-    # basic rules
     if slot.status != "available" or slot.start_time < timezone.now():
         messages.error(request, "This slot is no longer available.")
         return redirect("appointments:available_slots")
 
-    # create appointment and lock slot
     appt = Appointment.objects.create(
         patient=request.user,
         doctor=slot.doctor,
         slot=slot,
         status="booked",
     )
+
     slot.status = "booked"
-    slot.appointment = appt  # only if your model has this FK/OneToOne
-    slot.save()
+    slot.save(update_fields=["status"])
+
+    #  Kafka AUDIT EVENT
+    publish_event(
+        "appointment_booked",
+        {
+            "appointment_id": appt.id,
+            "slot_id": slot.id,
+            "patient_id": request.user.id,
+            "doctor_id": slot.doctor_id,
+            "start_time": slot.start_time.isoformat(),
+            "end_time": slot.end_time.isoformat(),
+        }
+    )
 
     messages.success(request, "Appointment booked!")
     return redirect("appointments:my_appointments")
