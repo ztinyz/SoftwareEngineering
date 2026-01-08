@@ -35,6 +35,7 @@ class Command(BaseCommand):
                         "appointment_id": appt.id,
                         "patient_id": appt.patient_id,
                         "doctor_id": appt.doctor_id,
+                        "contact_email": appt.contact_email,
                         "slot_id": appt.slot_id,
                         "start_time": appt.slot.start_time.isoformat(),
                         "end_time": appt.slot.end_time.isoformat(),

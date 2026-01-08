@@ -11,25 +11,38 @@ from .kafka import publish_event
 from .models import Appointment, AppointmentSlot, Reminder
 
 from django.db.models import Exists, OuterRef
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 @login_required
 def available_slots(request):
     booked_exists = Appointment.objects.filter(
-    slot_id=OuterRef("pk"),
-    status="booked",
+        slot_id=OuterRef("pk"),
+        status="booked",
     )
 
-    slots = (
+    qs = (
         AppointmentSlot.objects
         .filter(status="available", start_time__gte=timezone.now())
         .annotate(has_appt=Exists(booked_exists))
         .filter(has_appt=False)
         .select_related("doctor")
-        .order_by("start_time")[:200]
+        .order_by("start_time")
     )
 
-    return render(request, "appointments/available_slots.html", {"slots": slots})
+    doctors = User.objects.filter(is_staff=True).order_by("username")
 
+    doctor_id = request.GET.get("doctor")
+    if doctor_id:
+        qs = qs.filter(doctor_id=doctor_id)
+
+    slots = qs[:200]  # ✅ slice at the end
+
+    return render(
+        request,
+        "appointments/available_slots.html",
+        {"slots": slots, "doctors": doctors, "selected_doctor": doctor_id},
+    )
 
 @login_required
 def my_appointments(request: HttpRequest) -> HttpResponse:
@@ -120,8 +133,6 @@ def book_slot(request, slot_id: int):
                 "end_time": slot.end_time.isoformat(),
             }
         )
-
-        
 
         messages.success(request, "Appointment booked!")
         return redirect("appointments:my_appointments")

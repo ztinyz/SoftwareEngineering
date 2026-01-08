@@ -43,7 +43,7 @@ while True:
     payload = event.get("payload") or {}
 
     # ✅ only handle these two
-    if event_type not in ("appointment_booked", "appointment_cancelled"):
+    if event_type not in ("appointment_booked", "appointment_cancelled", "appointment_reminder_due"):
         continue
 
     email = payload.get("contact_email")
@@ -61,13 +61,22 @@ while True:
             f"Start: {start}\n"
             f"End: {end}\n"
         )
-    else:
+    elif event_type == "appointment_cancelled":
         subject = "Your appointment was cancelled"
         message = (
             "Your appointment has been cancelled.\n\n"
             f"Start: {start}\n"
             f"End: {end}\n"
         )
+    else:
+        subject = "Appointment reminder"
+        remind_at = payload.get("remind_at", "N/A")
+        message = (
+            "Reminder: you have an appointment soon.\n\n"
+            f"Remind at: {remind_at}\n"
+            f"Start: {start}\n"
+            f"End: {end}\n"
+        )        
 
     try:
         send_mail(
