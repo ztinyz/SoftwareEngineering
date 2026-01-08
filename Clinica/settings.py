@@ -41,6 +41,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'index',
     'login',
     'django.contrib.admin',
@@ -52,6 +53,8 @@ INSTALLED_APPS = [
     'axes',
     'hcaptcha',
     'appointments',
+    'channels',
+    'chat',
 ]
 
 # Email settings
@@ -177,3 +180,13 @@ AXES_FAILURE_LIMIT = 5
 AXES_COOLOFF_TIME = 0.5  # in hours
 AXES_LOCKOUT_PARAMETERS = ['ip_address', 'username']
 AXES_RESET_ON_SUCCESS = True
+
+ASGI_APPLICATION = 'Clinica.asgi.application'
+
+# WebSocket & Real-time Communication Configuration
+# Uses Kafka as the channel layer for scalability and persistence
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}

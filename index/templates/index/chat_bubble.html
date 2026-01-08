@@ -1,0 +1,113 @@
+<div id="chat-widget">
+    <button id="chat-bubble" class="chat-bubble" aria-label="Open chat">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+    </button>
+    
+    <div id="chat-window" class="chat-window hidden">
+        <div class="chat-header">
+            <h3>Chat Support</h3>
+            <button id="close-chat" aria-label="Close chat">&times;</button>
+        </div>
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="chat-input-container">
+            <input type="text" id="chat-input" placeholder="Type a message..." />
+            <button id="send-message">Send</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let chatSocket = null;
+    const messagesContainer = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const currentUsername = '{{ user.username }}';
+    
+    // Toggle chat window
+    document.getElementById('chat-bubble').addEventListener('click', () => {
+        const chatWindow = document.getElementById('chat-window');
+        chatWindow.classList.toggle('hidden');
+        
+        if (!chatWindow.classList.contains('hidden')) {
+            if (!chatSocket) {
+                connectWebSocket();
+            }
+            chatInput.focus();
+        }
+    });
+    
+    // Close chat
+    document.getElementById('close-chat').addEventListener('click', () => {
+        document.getElementById('chat-window').classList.add('hidden');
+    });
+    
+    // Connect to WebSocket (through Kafka)
+    function connectWebSocket() {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}/ws/chat/`;
+        
+        chatSocket = new WebSocket(wsUrl);
+        
+        chatSocket.onopen = function(e) {
+            console.log('Connected to chat via Kafka');
+        };
+        
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            
+            if (data.type === 'system') {
+                addMessage(data.message, 'system');
+            } else if (data.type === 'message') {
+                const isCurrentUser = data.username === currentUsername;
+                const sender = isCurrentUser ? 'user' : 'support';
+                const displayText = isCurrentUser ? data.message : `${data.username}: ${data.message}`;
+                addMessage(displayText, sender);
+            }
+        };
+        
+        chatSocket.onclose = function(e) {
+            console.log('Disconnected from chat');
+            addMessage('Connection closed. Refresh to reconnect.', 'system');
+            chatSocket = null;
+        };
+        
+        chatSocket.onerror = function(e) {
+            console.error('WebSocket error:', e);
+            addMessage('Connection error occurred.', 'system');
+        };
+    }
+    
+    // Send message
+    function sendMessage() {
+        const message = chatInput.value.trim();
+        
+        if (!message) return;
+        
+        if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+            chatSocket.send(JSON.stringify({
+                'message': message
+            }));
+            chatInput.value = '';
+        } else {
+            addMessage('Not connected. Please refresh the page.', 'system');
+        }
+    }
+    
+    // Event listeners
+    document.getElementById('send-message').addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+    
+    // Add message to UI
+    function addMessage(text, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}`;
+        messageDiv.textContent = text;
+        messagesContainer.appendChild(messageDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+</script>
