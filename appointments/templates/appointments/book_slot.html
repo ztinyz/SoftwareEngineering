@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Book slot</title>
+
+  <style>
+    :root{
+      --bg:#f6f7fb; --card:#fff; --text:#111827; --muted:#6b7280;
+      --primary:#0ea5a4; --primary-dark:#0b7f7e; --border:#e5e7eb;
+      --radius:18px; --shadow:0 12px 28px rgba(0,0,0,.10);
+    }
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text);}
+    .container{max-width:800px;margin:26px auto;padding:0 18px;}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;}
+    h1{margin:0 0 6px;font-size:30px;}
+    .muted{color:var(--muted);}
+    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-top:14px;}
+    label{font-weight:700;}
+    input{
+      width:100%; padding:12px 14px; border-radius:14px; border:1px solid var(--border);
+      font-size:14px; outline:none;
+    }
+    .btn{
+      background:var(--primary); color:#fff; border:none; padding:10px 16px;
+      border-radius:999px; font-weight:800; cursor:pointer; text-decoration:none; display:inline-block;
+    }
+    .btn:hover{background:var(--primary-dark);}
+    .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border);}
+    .btn-ghost:hover{background:#f3f4f6;}
+  </style>
+</head>
+<body>
+  <main class="container">
+    {% if messages %}
+      <div class="card" style="margin-bottom:14px;">
+        {% for m in messages %}
+          <div style="margin:6px 0;">{{ m }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="card">
+      <h1>Book this slot</h1>
+      <div class="muted"><b>{{ slot.start_time }}</b> → <b>{{ slot.end_time }}</b></div>
+
+      <form method="post" style="margin-top:16px;">
+        {% csrf_token %}
+        <label for="contact_email">Email for notifications</label>
+        <div style="margin-top:8px;">
+          <input id="contact_email" name="contact_email" type="email" placeholder="you@example.com" required>
+        </div>
+
+        <div class="row">
+          <a class="btn btn-ghost" href="{% url 'appointments:available_slots' %}">Back</a>
+          <button class="btn" type="submit">Confirm booking</button>
+        </div>
+      </form>
+    </div>
+  </main>
+</body>
+</html>

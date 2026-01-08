@@ -180,10 +180,7 @@
 
                 <div class="muted">Ends: {{ s.end_time }}</div>
 
-                    <form method="post" action="{% url 'appointments:book_slot' s.id %}">
-                  {% csrf_token %}
-                  <button class="btn" type="submit">Book</button>
-                </form>
+                    <a class="btn" href="{% url 'appointments:book_slot' s.id %}">Book</a>
               </div>
             </div>
           {% endfor %}

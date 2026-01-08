@@ -165,7 +165,8 @@
     </div>
 
     <div class="card">
-      {% for a in appointments %}
+      {% for a in appts %}
+
         <div class="appt">
           <div>
             <div style="font-weight:900;">
@@ -181,7 +182,7 @@
 
           {# Optional cancel button if you have cancel route #}
           {% if a.status != "canceled" and a.status != "cancelled" %}
-            <form method="post" action="{% url 'appointments:cancel_appointment' a.id %}">
+            <form method="post" action="{% url 'appointments:cancel' a.id %}">
               {% csrf_token %}
               <button class="btn btn-danger" type="submit">Cancel</button>
             </form>

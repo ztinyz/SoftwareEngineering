@@ -19,3 +19,4 @@ def publish_event(event_type: str, payload: dict):
         json.dumps(event).encode("utf-8")
     )
     producer.flush()
+
