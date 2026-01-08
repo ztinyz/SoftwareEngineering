@@ -49,6 +49,12 @@ def login_view(request):
 
             user = authenticate(request, username=username, password=password)
 
+            Appointment.objects.filter(
+                patient__isnull=True,
+                contact_email=request.user.email
+            ).update(patient=request.user)
+
+
             if not user:
                 context['message'] = 'Invalid email or password.'
                 return render(request, 'login/login.html', context)

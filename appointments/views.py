@@ -14,7 +14,7 @@ from django.db.models import Exists, OuterRef
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
-@login_required
+
 def available_slots(request):
     booked_exists = Appointment.objects.filter(
         slot_id=OuterRef("pk"),
@@ -72,7 +72,7 @@ from .models import AppointmentSlot, Appointment
 from .kafka import publish_event
 
 
-@login_required
+
 def book_slot(request, slot_id: int):
     slot = get_object_or_404(AppointmentSlot, id=slot_id)
 
@@ -109,13 +109,16 @@ def book_slot(request, slot_id: int):
                 messages.error(request, "This slot is no longer available.")
                 return redirect("appointments:available_slots")
 
+            patient = request.user if request.user.is_authenticated else None
+
             appt = Appointment.objects.create(
-                patient=request.user,
+                patient=patient,          
                 doctor=slot.doctor,
                 slot=slot,
                 status="booked",
-                contact_email=contact_email,   # ✅ store email
+                contact_email=contact_email,
             )
+
 
             slot.status = "booked"
             slot.save(update_fields=["status"])
