@@ -48,7 +48,7 @@ class RegistrationTests(CaptchaTestCase):
         self.client.post(reverse('login:login'), {
             'buton_register': 'buton_register',
             'username': 'doctor1',
-            'email': 'doctor@test.com',
+            'email': 'doctor@clinica.ro',  # Doctors must use @clinica.ro domain
             'password': 'StrongPass123!',
             'password_confirm': 'StrongPass123!',
             'user_type': 'doctor',
@@ -371,3 +371,324 @@ class BruteForceProtectionTests(CaptchaTestCase):
             'login-h-captcha-response': 'PASSED'
         })
         self.assertEqual(response.status_code, 302)
+
+
+# ============================================================================
+# RUNTIME VERIFICATION TESTS (Marshmallow + Transitions)
+# ============================================================================
+
+from marshmallow import ValidationError
+from .schemas import UserRegistrationSchema, EmailVerificationSchema
+from .registration_state_machine import RegistrationStateMachine
+
+
+class MarshmallowSchemaTests(TestCase):
+    """Tests for Marshmallow schema validation (runtime verification)."""
+    
+    def setUp(self):
+        self.schema = UserRegistrationSchema()
+        self.valid_data = {
+            'username': 'newuser',
+            'email': 'newuser@example.com',
+            'password': 'SecurePass123!',
+            'password_confirm': 'SecurePass123!',
+            'first_name': 'Test',
+            'last_name': 'User',
+            'user_type': 'patient'
+        }
+    
+    def test_valid_patient_registration(self):
+        """Test that valid patient data passes Marshmallow validation."""
+        result = self.schema.load(self.valid_data)
+        self.assertEqual(result['username'], 'newuser')
+        self.assertEqual(result['email'], 'newuser@example.com')
+        self.assertEqual(result['user_type'], 'patient')
+    
+    def test_valid_doctor_registration(self):
+        """Test that valid doctor data passes Marshmallow validation."""
+        doctor_data = self.valid_data.copy()
+        doctor_data['user_type'] = 'doctor'
+        doctor_data['email'] = 'doctor@clinica.ro'
+        
+        result = self.schema.load(doctor_data)
+        self.assertEqual(result['user_type'], 'doctor')
+        self.assertEqual(result['email'], 'doctor@clinica.ro')
+    
+    def test_password_mismatch_fails(self):
+        """Test that mismatched passwords fail Marshmallow validation."""
+        data = self.valid_data.copy()
+        data['password_confirm'] = 'DifferentPass123!'
+        
+        with self.assertRaises(ValidationError) as context:
+            self.schema.load(data)
+        
+        self.assertIn('password_confirm', context.exception.messages)
+    
+    def test_doctor_wrong_email_domain_fails(self):
+        """Test that doctors with non-clinica.ro email fail validation."""
+        data = self.valid_data.copy()
+        data['user_type'] = 'doctor'
+        data['email'] = 'doctor@gmail.com'
+        
+        with self.assertRaises(ValidationError) as context:
+            self.schema.load(data)
+        
+        self.assertIn('email', context.exception.messages)
+    
+    def test_weak_password_fails(self):
+        """Test that weak passwords fail Marshmallow validation."""
+        data = self.valid_data.copy()
+        data['password'] = 'weakpass'
+        data['password_confirm'] = 'weakpass'
+        
+        with self.assertRaises(ValidationError) as context:
+            self.schema.load(data)
+        
+        self.assertIn('password', context.exception.messages)
+    
+    def test_invalid_username_fails(self):
+        """Test that invalid usernames fail validation."""
+        data = self.valid_data.copy()
+        data['username'] = 'ab'  # Too short
+        
+        with self.assertRaises(ValidationError) as context:
+            self.schema.load(data)
+        
+        self.assertIn('username', context.exception.messages)
+    
+    def test_invalid_email_fails(self):
+        """Test that invalid email format fails validation."""
+        data = self.valid_data.copy()
+        data['email'] = 'not-an-email'
+        
+        with self.assertRaises(ValidationError) as context:
+            self.schema.load(data)
+        
+        self.assertIn('email', context.exception.messages)
+    
+    def test_invalid_user_type_fails(self):
+        """Test that invalid user type fails validation."""
+        data = self.valid_data.copy()
+        data['user_type'] = 'admin'  # Not allowed
+        
+        with self.assertRaises(ValidationError) as context:
+            self.schema.load(data)
+        
+        self.assertIn('user_type', context.exception.messages)
+    
+    def test_duplicate_username_fails(self):
+        """Test that duplicate usernames fail validation."""
+        # Create existing user
+        User.objects.create_user(
+            username='existinguser',
+            email='existing@example.com',
+            password='Test123!'
+        )
+        
+        data = self.valid_data.copy()
+        data['username'] = 'existinguser'
+        
+        with self.assertRaises(ValidationError) as context:
+            self.schema.load(data)
+        
+        self.assertIn('username', context.exception.messages)
+    
+    def test_duplicate_email_fails(self):
+        """Test that duplicate emails fail validation."""
+        User.objects.create_user(
+            username='otheruser',
+            email='taken@example.com',
+            password='Test123!'
+        )
+        
+        data = self.valid_data.copy()
+        data['email'] = 'taken@example.com'
+        
+        with self.assertRaises(ValidationError) as context:
+            self.schema.load(data)
+        
+        self.assertIn('email', context.exception.messages)
+
+
+class EmailVerificationSchemaTests(TestCase):
+    """Tests for email verification token schema."""
+    
+    def setUp(self):
+        self.schema = EmailVerificationSchema()
+    
+    def test_valid_uuid_token(self):
+        """Test that valid UUID tokens pass validation."""
+        valid_token = str(uuid.uuid4())
+        result = self.schema.load({'token': valid_token})
+        self.assertIsNotNone(result['token'])
+    
+    def test_invalid_token_format_fails(self):
+        """Test that invalid token formats fail validation."""
+        with self.assertRaises(ValidationError) as context:
+            self.schema.load({'token': 'not-a-valid-uuid'})
+        
+        self.assertIn('token', context.exception.messages)
+
+
+class StateMachineTests(TestCase):
+    """Tests for the registration state machine (Transitions library)."""
+    
+    def test_initial_state(self):
+        """Test that machine starts in 'initial' state."""
+        machine = RegistrationStateMachine('testuser')
+        self.assertEqual(machine.state, 'initial')
+    
+    def test_submit_data_transition(self):
+        """Test transition from initial to data_submitted."""
+        machine = RegistrationStateMachine('testuser')
+        machine.submit_data()
+        self.assertEqual(machine.state, 'data_submitted')
+    
+    def test_django_validate_transition(self):
+        """Test transition from data_submitted to django_validated."""
+        machine = RegistrationStateMachine('testuser')
+        machine.submit_data()
+        machine.django_validate()
+        self.assertEqual(machine.state, 'django_validated')
+    
+    def test_marshmallow_validate_transition(self):
+        """Test transition from django_validated to marshmallow_validated."""
+        machine = RegistrationStateMachine('testuser')
+        machine.submit_data()
+        machine.django_validate()
+        machine.set_validation_result(True)
+        machine.marshmallow_validate()
+        self.assertEqual(machine.state, 'marshmallow_validated')
+    
+    def test_full_registration_flow(self):
+        """Test complete registration state machine flow."""
+        machine = RegistrationStateMachine('testuser')
+        
+        # Step 1: Submit data
+        machine.submit_data()
+        self.assertEqual(machine.state, 'data_submitted')
+        
+        # Step 2: Django validation
+        machine.django_validate()
+        self.assertEqual(machine.state, 'django_validated')
+        
+        # Step 3: Marshmallow validation
+        machine.set_validation_result(True)
+        machine.marshmallow_validate()
+        self.assertEqual(machine.state, 'marshmallow_validated')
+        
+        # Step 4: Create user
+        machine.create_user()
+        self.assertEqual(machine.state, 'user_created')
+        
+        # Step 5: Send email
+        machine.send_verification_email()
+        self.assertEqual(machine.state, 'email_sent')
+    
+    def test_invalid_transition_blocked(self):
+        """Test that invalid transitions raise exceptions."""
+        machine = RegistrationStateMachine('testuser')
+        
+        # Cannot go directly to django_validated from initial
+        with self.assertRaises(Exception):
+            machine.django_validate()
+        
+        self.assertEqual(machine.state, 'initial')
+    
+    def test_marshmallow_validation_guard(self):
+        """Test that marshmallow_validate is blocked without valid data."""
+        machine = RegistrationStateMachine('testuser')
+        machine.submit_data()
+        machine.django_validate()
+        
+        # Don't set validation_passed to True
+        machine.set_validation_result(False)
+        
+        # Try to transition - it should not change state because guard is False
+        # Note: transitions library doesn't raise exception, it just doesn't transition
+        result = machine.marshmallow_validate()
+        
+        # State should remain at django_validated because guard blocked transition
+        self.assertEqual(machine.state, 'django_validated')
+        # The transition returns False when blocked by guard
+        self.assertFalse(result)
+    
+    def test_failure_transition(self):
+        """Test transition to failed state."""
+        machine = RegistrationStateMachine('testuser')
+        machine.submit_data()
+        machine.error_message = "Test failure"
+        machine.fail()
+        
+        self.assertEqual(machine.state, 'failed')
+    
+    def test_state_history_recording(self):
+        """Test that state history is properly recorded."""
+        machine = RegistrationStateMachine('testuser')
+        machine.submit_data()
+        machine.django_validate()
+        
+        history = machine.get_state_history()
+        self.assertEqual(len(history), 2)
+        
+        self.assertEqual(history[0]['from_state'], 'initial')
+        self.assertEqual(history[0]['to_state'], 'data_submitted')
+        
+        self.assertEqual(history[1]['from_state'], 'data_submitted')
+        self.assertEqual(history[1]['to_state'], 'django_validated')
+    
+    def test_retry_from_failed(self):
+        """Test retry transition from failed state."""
+        machine = RegistrationStateMachine('testuser')
+        machine.submit_data()
+        machine.fail()
+        self.assertEqual(machine.state, 'failed')
+        
+        machine.retry()
+        self.assertEqual(machine.state, 'initial')
+
+
+@override_settings(HCAPTCHA_TESTING=True)
+class IntegrationRuntimeVerificationTests(CaptchaTestCase):
+    """Integration tests for runtime verification with existing registration."""
+    
+    @patch('hcaptcha.fields.hCaptchaField.validate')
+    def test_registration_with_runtime_verification(self, mock_validate):
+        """Test that registration works with the new runtime verification layer."""
+        mock_validate.return_value = True
+        
+        response = self.client.post(reverse('login:login'), {
+            'buton_register': 'buton_register',
+            'username': 'runtimeuser',
+            'email': 'runtime@test.com',
+            'password': 'SecurePass123!',
+            'password_confirm': 'SecurePass123!',
+            'user_type': 'patient',
+            'register-h-captcha-response': 'PASSED',
+        })
+        
+        # User should be created
+        self.assertEqual(User.objects.filter(username='runtimeuser').count(), 1)
+        user = User.objects.get(username='runtimeuser')
+        profile = UserProfile.objects.get(user=user)
+        
+        self.assertEqual(profile.user_type, 'patient')
+        self.assertFalse(profile.email_verified)
+    
+    @patch('hcaptcha.fields.hCaptchaField.validate')
+    def test_weak_password_blocked_by_marshmallow(self, mock_validate):
+        """Test that weak passwords are blocked by Marshmallow validation."""
+        mock_validate.return_value = True
+        
+        response = self.client.post(reverse('login:login'), {
+            'buton_register': 'buton_register',
+            'username': 'weakpassuser',
+            'email': 'weak@test.com',
+            'password': 'weak',  # No uppercase, no digit, no special char
+            'password_confirm': 'weak',
+            'user_type': 'patient',
+            'register-h-captcha-response': 'PASSED',
+        })
+        
+        # User should NOT be created due to Marshmallow validation
+        self.assertEqual(User.objects.filter(username='weakpassuser').count(), 0)

@@ -1,0 +1,174 @@
+INFO 2026-01-09 09:02:46,853 registration_state_machine Registration [testuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:02:46,853 registration_state_machine Registration [testuser]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:02:46,854 registration_state_machine Registration [testuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+WARNING 2026-01-09 09:02:46,854 registration_state_machine Registration [testuser]: FAILED from state 'data_submitted'. Error: Test failure
+INFO 2026-01-09 09:02:46,855 registration_state_machine Registration [testuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:02:46,857 registration_state_machine Registration [testuser]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:02:46,857 registration_state_machine Registration [testuser]: Transition 'marshmallow_validate' from 'django_validated' to 'marshmallow_validated'
+INFO 2026-01-09 09:02:46,857 registration_state_machine Registration [testuser]: Transition 'create_user' from 'marshmallow_validated' to 'user_created'
+INFO 2026-01-09 09:02:46,857 registration_state_machine Registration [testuser]: Transition 'send_verification_email' from 'user_created' to 'email_sent'
+INFO 2026-01-09 09:02:46,859 registration_state_machine Registration [testuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:02:46,859 registration_state_machine Registration [testuser]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:02:46,860 registration_state_machine Registration [testuser]: Transition 'marshmallow_validate' from 'django_validated' to 'marshmallow_validated'
+INFO 2026-01-09 09:02:46,860 registration_state_machine Registration [testuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:02:46,860 registration_state_machine Registration [testuser]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:02:46,861 registration_state_machine Registration [testuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+WARNING 2026-01-09 09:02:46,862 registration_state_machine Registration [testuser]: FAILED from state 'data_submitted'. Error: None
+INFO 2026-01-09 09:02:46,862 registration_state_machine Registration [testuser]: Transition 'retry' from 'failed' to 'initial'
+INFO 2026-01-09 09:02:46,863 registration_state_machine Registration [testuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:02:46,863 registration_state_machine Registration [testuser]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:02:46,864 registration_state_machine Registration [testuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:03:08,983 registration_state_machine Registration [testuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:03:08,983 registration_state_machine Registration [testuser]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:03:19,235 registration_state_machine Registration [runtimeuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:03:19,259 registration_state_machine Registration [runtimeuser]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:03:19,260 registration_state_machine Registration [runtimeuser]: Transition 'marshmallow_validate' from 'django_validated' to 'marshmallow_validated'
+INFO 2026-01-09 09:03:19,260 verification_service Marshmallow validation passed for user: runtimeuser
+INFO 2026-01-09 09:03:19,260 views All validations passed for user: runtimeuser
+INFO 2026-01-09 09:03:19,549 registration_state_machine Registration [runtimeuser]: Transition 'create_user' from 'marshmallow_validated' to 'user_created'
+INFO 2026-01-09 09:03:20,419 registration_state_machine Registration [runtimeuser]: Transition 'send_verification_email' from 'user_created' to 'email_sent'
+INFO 2026-01-09 09:03:20,717 registration_state_machine Registration [weakpassuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+WARNING 2026-01-09 09:03:20,760 registration_state_machine Registration [weakpassuser]: FAILED from state 'data_submitted'. Error: Django form validation failed: <ul class="errorlist"><li>password<ul class="errorlist"><li>This password is too short. It must contain at least 8 characters.</li></ul></li></ul>
+INFO 2026-01-09 09:03:32,505 registration_state_machine Registration [doctor1]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:03:32,687 registration_state_machine Registration [patient1]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:03:32,687 registration_state_machine Registration [patient1]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:03:32,687 registration_state_machine Registration [patient1]: Transition 'marshmallow_validate' from 'django_validated' to 'marshmallow_validated'
+INFO 2026-01-09 09:03:32,687 verification_service Marshmallow validation passed for user: patient1
+INFO 2026-01-09 09:03:32,687 views All validations passed for user: patient1
+INFO 2026-01-09 09:03:32,985 registration_state_machine Registration [patient1]: Transition 'create_user' from 'marshmallow_validated' to 'user_created'
+INFO 2026-01-09 09:03:33,836 registration_state_machine Registration [patient1]: Transition 'send_verification_email' from 'user_created' to 'email_sent'
+INFO 2026-01-09 09:04:08,773 registration_state_machine Registration [doctor1]: Transition 'submit_data' from 'initial' to 'data_submitted'
+WARNING 2026-01-09 09:04:08,787 registration_state_machine Registration [doctor1]: FAILED from state 'data_submitted'. Error: Django form validation failed: <ul class="errorlist"><li>__all__<ul class="errorlist nonfield"><li>Doctors must register with a @clinica.ro email.</li></ul></li></ul>
+INFO 2026-01-09 09:04:08,835 registration_state_machine Registration [patient1]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:04:08,835 registration_state_machine Registration [patient1]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:04:08,835 registration_state_machine Registration [patient1]: Transition 'marshmallow_validate' from 'django_validated' to 'marshmallow_validated'
+INFO 2026-01-09 09:04:08,838 verification_service Marshmallow validation passed for user: patient1
+INFO 2026-01-09 09:04:08,838 views All validations passed for user: patient1
+INFO 2026-01-09 09:04:09,133 registration_state_machine Registration [patient1]: Transition 'create_user' from 'marshmallow_validated' to 'user_created'
+INFO 2026-01-09 09:04:09,981 registration_state_machine Registration [patient1]: Transition 'send_verification_email' from 'user_created' to 'email_sent'
+INFO 2026-01-09 09:04:43,211 registration_state_machine Registration [doctor1]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:04:43,222 registration_state_machine Registration [doctor1]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:04:43,224 registration_state_machine Registration [doctor1]: Transition 'marshmallow_validate' from 'django_validated' to 'marshmallow_validated'
+INFO 2026-01-09 09:04:43,224 verification_service Marshmallow validation passed for user: doctor1
+INFO 2026-01-09 09:04:43,224 views All validations passed for user: doctor1
+INFO 2026-01-09 09:04:43,513 registration_state_machine Registration [doctor1]: Transition 'create_user' from 'marshmallow_validated' to 'user_created'
+INFO 2026-01-09 09:04:44,495 registration_state_machine Registration [doctor1]: Transition 'send_verification_email' from 'user_created' to 'email_sent'
+INFO 2026-01-09 09:04:44,793 registration_state_machine Registration [patient1]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:04:44,801 registration_state_machine Registration [patient1]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:04:44,801 registration_state_machine Registration [patient1]: Transition 'marshmallow_validate' from 'django_validated' to 'marshmallow_validated'
+INFO 2026-01-09 09:04:44,801 verification_service Marshmallow validation passed for user: patient1
+INFO 2026-01-09 09:04:44,801 views All validations passed for user: patient1
+INFO 2026-01-09 09:04:45,085 registration_state_machine Registration [patient1]: Transition 'create_user' from 'marshmallow_validated' to 'user_created'
+INFO 2026-01-09 09:04:45,085 registration_state_machine Registration [patient1]: Transition 'send_verification_email' from 'user_created' to 'email_sent'
+INFO 2026-01-09 09:05:05,278 verification_service Email token verified for user: user1
+WARNING 2026-01-09 09:05:05,576 views Token validation failed: token: Verification token has expired. Please request a new one.
+INFO 2026-01-09 09:05:05,881 verification_service Email token verified for user: user1
+INFO 2026-01-09 09:05:05,881 views Email verified successfully for user: user1
+INFO 2026-01-09 09:05:05,888 registration_state_machine Registration [runtimeuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:05:05,889 registration_state_machine Registration [runtimeuser]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:05:05,890 registration_state_machine Registration [runtimeuser]: Transition 'marshmallow_validate' from 'django_validated' to 'marshmallow_validated'
+INFO 2026-01-09 09:05:05,890 verification_service Marshmallow validation passed for user: runtimeuser
+INFO 2026-01-09 09:05:05,890 views All validations passed for user: runtimeuser
+INFO 2026-01-09 09:05:06,187 registration_state_machine Registration [runtimeuser]: Transition 'create_user' from 'marshmallow_validated' to 'user_created'
+INFO 2026-01-09 09:05:06,187 registration_state_machine Registration [runtimeuser]: Transition 'send_verification_email' from 'user_created' to 'email_sent'
+INFO 2026-01-09 09:05:06,493 registration_state_machine Registration [weakpassuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+WARNING 2026-01-09 09:05:06,493 registration_state_machine Registration [weakpassuser]: FAILED from state 'data_submitted'. Error: Django form validation failed: <ul class="errorlist"><li>password<ul class="errorlist"><li>This password is too short. It must contain at least 8 characters.</li></ul></li></ul>
+INFO 2026-01-09 09:05:08,608 registration_state_machine Registration [doctor1]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:05:08,609 registration_state_machine Registration [doctor1]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:05:08,609 registration_state_machine Registration [doctor1]: Transition 'marshmallow_validate' from 'django_validated' to 'marshmallow_validated'
+INFO 2026-01-09 09:05:08,610 verification_service Marshmallow validation passed for user: doctor1
+INFO 2026-01-09 09:05:08,610 views All validations passed for user: doctor1
+INFO 2026-01-09 09:05:08,903 registration_state_machine Registration [doctor1]: Transition 'create_user' from 'marshmallow_validated' to 'user_created'
+INFO 2026-01-09 09:05:08,903 registration_state_machine Registration [doctor1]: Transition 'send_verification_email' from 'user_created' to 'email_sent'
+INFO 2026-01-09 09:05:09,208 registration_state_machine Registration [patient1]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:05:09,208 registration_state_machine Registration [patient1]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:05:09,208 registration_state_machine Registration [patient1]: Transition 'marshmallow_validate' from 'django_validated' to 'marshmallow_validated'
+INFO 2026-01-09 09:05:09,208 verification_service Marshmallow validation passed for user: patient1
+INFO 2026-01-09 09:05:09,208 views All validations passed for user: patient1
+INFO 2026-01-09 09:05:09,507 registration_state_machine Registration [patient1]: Transition 'create_user' from 'marshmallow_validated' to 'user_created'
+INFO 2026-01-09 09:05:09,507 registration_state_machine Registration [patient1]: Transition 'send_verification_email' from 'user_created' to 'email_sent'
+INFO 2026-01-09 09:05:10,104 registration_state_machine Registration [testuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:05:10,104 registration_state_machine Registration [testuser]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:05:10,111 registration_state_machine Registration [testuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+WARNING 2026-01-09 09:05:10,111 registration_state_machine Registration [testuser]: FAILED from state 'data_submitted'. Error: Test failure
+INFO 2026-01-09 09:05:10,111 registration_state_machine Registration [testuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:05:10,111 registration_state_machine Registration [testuser]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:05:10,111 registration_state_machine Registration [testuser]: Transition 'marshmallow_validate' from 'django_validated' to 'marshmallow_validated'
+INFO 2026-01-09 09:05:10,111 registration_state_machine Registration [testuser]: Transition 'create_user' from 'marshmallow_validated' to 'user_created'
+INFO 2026-01-09 09:05:10,111 registration_state_machine Registration [testuser]: Transition 'send_verification_email' from 'user_created' to 'email_sent'
+INFO 2026-01-09 09:05:10,111 registration_state_machine Registration [testuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:05:10,111 registration_state_machine Registration [testuser]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:05:10,111 registration_state_machine Registration [testuser]: Transition 'marshmallow_validate' from 'django_validated' to 'marshmallow_validated'
+INFO 2026-01-09 09:05:10,111 registration_state_machine Registration [testuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:05:10,111 registration_state_machine Registration [testuser]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:05:10,115 registration_state_machine Registration [testuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+WARNING 2026-01-09 09:05:10,115 registration_state_machine Registration [testuser]: FAILED from state 'data_submitted'. Error: None
+INFO 2026-01-09 09:05:10,115 registration_state_machine Registration [testuser]: Transition 'retry' from 'failed' to 'initial'
+INFO 2026-01-09 09:05:10,116 registration_state_machine Registration [testuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:05:10,116 registration_state_machine Registration [testuser]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:05:10,116 registration_state_machine Registration [testuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:05:45,931 registration_state_machine Registration [testuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:05:45,931 registration_state_machine Registration [testuser]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:05:45,931 registration_state_machine Registration [testuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+WARNING 2026-01-09 09:05:45,931 registration_state_machine Registration [testuser]: FAILED from state 'data_submitted'. Error: Test failure
+INFO 2026-01-09 09:05:45,931 registration_state_machine Registration [testuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:05:45,935 registration_state_machine Registration [testuser]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:05:45,935 registration_state_machine Registration [testuser]: Transition 'marshmallow_validate' from 'django_validated' to 'marshmallow_validated'
+INFO 2026-01-09 09:05:45,935 registration_state_machine Registration [testuser]: Transition 'create_user' from 'marshmallow_validated' to 'user_created'
+INFO 2026-01-09 09:05:45,935 registration_state_machine Registration [testuser]: Transition 'send_verification_email' from 'user_created' to 'email_sent'
+INFO 2026-01-09 09:05:45,936 registration_state_machine Registration [testuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:05:45,937 registration_state_machine Registration [testuser]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:05:45,937 registration_state_machine Registration [testuser]: Transition 'marshmallow_validate' from 'django_validated' to 'marshmallow_validated'
+INFO 2026-01-09 09:05:45,937 registration_state_machine Registration [testuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:05:45,938 registration_state_machine Registration [testuser]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:05:45,939 registration_state_machine Registration [testuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+WARNING 2026-01-09 09:05:45,939 registration_state_machine Registration [testuser]: FAILED from state 'data_submitted'. Error: None
+INFO 2026-01-09 09:05:45,939 registration_state_machine Registration [testuser]: Transition 'retry' from 'failed' to 'initial'
+INFO 2026-01-09 09:05:45,939 registration_state_machine Registration [testuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:05:45,940 registration_state_machine Registration [testuser]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:05:45,940 registration_state_machine Registration [testuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:05:45,952 registration_state_machine Registration [runtimeuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:05:45,966 registration_state_machine Registration [runtimeuser]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:05:45,967 registration_state_machine Registration [runtimeuser]: Transition 'marshmallow_validate' from 'django_validated' to 'marshmallow_validated'
+INFO 2026-01-09 09:05:45,968 verification_service Marshmallow validation passed for user: runtimeuser
+INFO 2026-01-09 09:05:45,968 views All validations passed for user: runtimeuser
+INFO 2026-01-09 09:05:46,258 registration_state_machine Registration [runtimeuser]: Transition 'create_user' from 'marshmallow_validated' to 'user_created'
+INFO 2026-01-09 09:05:47,105 registration_state_machine Registration [runtimeuser]: Transition 'send_verification_email' from 'user_created' to 'email_sent'
+INFO 2026-01-09 09:05:47,403 registration_state_machine Registration [weakpassuser]: Transition 'submit_data' from 'initial' to 'data_submitted'
+WARNING 2026-01-09 09:05:47,417 registration_state_machine Registration [weakpassuser]: FAILED from state 'data_submitted'. Error: Django form validation failed: <ul class="errorlist"><li>password<ul class="errorlist"><li>This password is too short. It must contain at least 8 characters.</li></ul></li></ul>
+INFO 2026-01-09 09:05:47,426 registration_state_machine Registration [doctor1]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:05:47,427 registration_state_machine Registration [doctor1]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:05:47,427 registration_state_machine Registration [doctor1]: Transition 'marshmallow_validate' from 'django_validated' to 'marshmallow_validated'
+INFO 2026-01-09 09:05:47,428 verification_service Marshmallow validation passed for user: doctor1
+INFO 2026-01-09 09:05:47,428 views All validations passed for user: doctor1
+INFO 2026-01-09 09:05:47,716 registration_state_machine Registration [doctor1]: Transition 'create_user' from 'marshmallow_validated' to 'user_created'
+INFO 2026-01-09 09:05:47,716 registration_state_machine Registration [doctor1]: Transition 'send_verification_email' from 'user_created' to 'email_sent'
+INFO 2026-01-09 09:05:48,015 registration_state_machine Registration [patient1]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:05:48,015 registration_state_machine Registration [patient1]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:05:48,015 registration_state_machine Registration [patient1]: Transition 'marshmallow_validate' from 'django_validated' to 'marshmallow_validated'
+INFO 2026-01-09 09:05:48,015 verification_service Marshmallow validation passed for user: patient1
+INFO 2026-01-09 09:05:48,015 views All validations passed for user: patient1
+INFO 2026-01-09 09:05:48,300 registration_state_machine Registration [patient1]: Transition 'create_user' from 'marshmallow_validated' to 'user_created'
+INFO 2026-01-09 09:05:48,300 registration_state_machine Registration [patient1]: Transition 'send_verification_email' from 'user_created' to 'email_sent'
+INFO 2026-01-09 09:09:44,254 registration_state_machine Registration [ztinyz2]: Transition 'submit_data' from 'initial' to 'data_submitted'
+WARNING 2026-01-09 09:09:44,368 registration_state_machine Registration [ztinyz2]: FAILED from state 'data_submitted'. Error: Django form validation failed: <ul class="errorlist"><li>password<ul class="errorlist"><li>This password is too short. It must contain at least 8 characters.</li></ul></li><li>username<ul class="errorlist"><li>A user with that username already exists.</li></ul></li></ul>
+INFO 2026-01-09 09:11:35,615 registration_state_machine Registration [nushfrate]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:11:35,736 registration_state_machine Registration [nushfrate]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:11:35,738 registration_state_machine Registration [nushfrate]: Transition 'marshmallow_validate' from 'django_validated' to 'marshmallow_validated'
+INFO 2026-01-09 09:11:35,739 verification_service Marshmallow validation passed for user: nushfrate
+INFO 2026-01-09 09:11:35,739 views All validations passed for user: nushfrate
+INFO 2026-01-09 09:11:36,051 registration_state_machine Registration [nushfrate]: Transition 'create_user' from 'marshmallow_validated' to 'user_created'
+INFO 2026-01-09 09:11:39,142 registration_state_machine Registration [nushfrate]: Transition 'send_verification_email' from 'user_created' to 'email_sent'
+INFO 2026-01-09 09:13:18,145 registration_state_machine Registration [qwerty]: Transition 'submit_data' from 'initial' to 'data_submitted'
+WARNING 2026-01-09 09:13:18,259 registration_state_machine Registration [qwerty]: FAILED from state 'data_submitted'. Error: Django form validation failed: <ul class="errorlist"><li>password<ul class="errorlist"><li>This password is too common.</li></ul></li></ul>
+INFO 2026-01-09 09:14:53,583 registration_state_machine Registration [ztinyz2]: Transition 'submit_data' from 'initial' to 'data_submitted'
+WARNING 2026-01-09 09:14:53,652 registration_state_machine Registration [ztinyz2]: FAILED from state 'data_submitted'. Error: Django form validation failed: <ul class="errorlist"><li>username<ul class="errorlist"><li>A user with that username already exists.</li></ul></li></ul>
+INFO 2026-01-09 09:15:32,440 registration_state_machine Registration [SecurePass]: Transition 'submit_data' from 'initial' to 'data_submitted'
+WARNING 2026-01-09 09:15:32,514 registration_state_machine Registration [SecurePass]: FAILED from state 'data_submitted'. Error: Django form validation failed: <ul class="errorlist"><li>__all__<ul class="errorlist nonfield"><li>Doctors must register with a @clinica.ro email.</li></ul></li></ul>
+INFO 2026-01-09 09:18:35,381 registration_state_machine Registration [dawdawda]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-09 09:18:35,460 registration_state_machine Registration [dawdawda]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-09 09:18:35,462 registration_state_machine Registration [dawdawda]: Transition 'marshmallow_validate' from 'django_validated' to 'marshmallow_validated'
+INFO 2026-01-09 09:18:35,462 verification_service Marshmallow validation passed for user: dawdawda
+INFO 2026-01-09 09:18:35,462 views All validations passed for user: dawdawda
+INFO 2026-01-09 09:18:35,764 registration_state_machine Registration [dawdawda]: Transition 'create_user' from 'marshmallow_validated' to 'user_created'
+INFO 2026-01-09 09:18:38,692 registration_state_machine Registration [dawdawda]: Transition 'send_verification_email' from 'user_created' to 'email_sent'

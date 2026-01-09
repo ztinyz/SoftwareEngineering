@@ -13,6 +13,7 @@ import uuid
 import secrets
 from functools import wraps
 from axes.decorators import axes_dispatch
+import logging
 
 from appointments.models import Appointment
 from .models import UserProfile
@@ -20,6 +21,12 @@ from .forms.registerform import RegistrationForm
 from .forms.updateform import AccountUpdateForm
 from .forms.captchaform import LoginCaptchaForm, RegisterCaptchaForm
 from .forms.loginform import LoginForm
+
+# Import runtime verification components (Marshmallow + Transitions)
+from .verification_service import RegistrationVerificationService, format_marshmallow_errors
+
+# Logger for registration audit trail
+registration_logger = logging.getLogger('verification_service')
 
 
 # Custom decorator to require email verification
@@ -117,12 +124,56 @@ def login_view(request):
                 context['message'] = 'Invalid CAPTCHA. Please try again.'
                 return render(request, 'login/login.html', context)
             
+            # ========== RUNTIME VERIFICATION LAYER (Marshmallow + Transitions) ==========
+            # Initialize the verification service for state machine tracking
+            verification_service = RegistrationVerificationService(request)
+            username = request.POST.get('username', 'unknown')
+            verification_service.initialize_state_machine(username)
+            
+            # Record form submission in state machine
+            verification_service.record_form_submission()
+            
+            # ========== EXISTING DJANGO FORM VALIDATION (Preserved) ==========
             if not registration_form.is_valid():
                 context['message'] = 'Please correct the registration form errors.'
                 for field, errors in registration_form.errors.items():
-                    field_name = registration_form.fields[field].label or field
+                    # Handle __all__ errors (form-level validation errors)
+                    if field == '__all__':
+                        field_name = 'Form'
+                    else:
+                        field_name = registration_form.fields.get(field)
+                        field_name = field_name.label if field_name and field_name.label else field
                     context['message'] += f" {field_name}: {', '.join(errors)}"
+                # Record failure in state machine
+                verification_service.record_failure(f"Django form validation failed: {registration_form.errors}")
                 return render(request, 'login/login.html', context)
+            
+            # Record Django validation passed in state machine
+            verification_service.record_django_validation_passed()
+            
+            # ========== ADDITIONAL MARSHMALLOW VALIDATION ==========
+            # This runs AFTER Django validation as an extra verification layer
+            form_data = {
+                'username': registration_form.cleaned_data.get('username'),
+                'email': registration_form.cleaned_data.get('email'),
+                'password': registration_form.cleaned_data.get('password'),
+                'password_confirm': registration_form.cleaned_data.get('password_confirm'),
+                'first_name': registration_form.cleaned_data.get('first_name', ''),
+                'last_name': registration_form.cleaned_data.get('last_name', ''),
+                'user_type': registration_form.cleaned_data.get('user_type')
+            }
+            
+            marshmallow_success, validated_data, marshmallow_errors = verification_service.validate_with_marshmallow(form_data)
+            
+            if not marshmallow_success:
+                context['message'] = 'Additional validation failed: '
+                context['message'] += format_marshmallow_errors(marshmallow_errors)
+                context['validation_errors'] = marshmallow_errors
+                registration_logger.warning(f"Marshmallow validation failed for {username}: {marshmallow_errors}")
+                return render(request, 'login/login.html', context)
+            
+            registration_logger.info(f"All validations passed for user: {username}")
+            # ========== END RUNTIME VERIFICATION LAYER ==========
             
             try:
                 # Create user but don't save to database yet
@@ -149,6 +200,9 @@ def login_view(request):
                     verification_token_expires=verification_expires
                 )
                 
+                # Record user creation in state machine
+                verification_service.record_user_created()
+                
                 # Send verification email
                 subject = 'Verify your email address'
                 verification_url = request.build_absolute_uri(
@@ -164,9 +218,14 @@ def login_view(request):
                         [user.email], 
                         fail_silently=False
                     )
+                    # Record email sent in state machine
+                    verification_service.record_email_sent()
                 except Exception as e:
                     print(f"Email failed: {e}")
                     messages.warning(request, 'Account created but verification email could not be sent. Please request a new one from your dashboard.')
+                
+                # Clear registration state from session (completed successfully)
+                verification_service.clear_registration_state()
                 
                 # Authenticate and login the new user
                 authenticated_user = authenticate(
@@ -314,7 +373,27 @@ def dash_view(request):
 
 
 def verify_email(request, token):
-    """Verify user email address using token"""
+    """Verify user email address using token with runtime verification"""
+    
+    # ========== RUNTIME VERIFICATION LAYER (Marshmallow) ==========
+    # Validate token format using Marshmallow schema
+    verification_service = RegistrationVerificationService(request)
+    token_valid, profile_from_marshmallow, token_errors = verification_service.verify_email_token(str(token))
+    
+    if not token_valid:
+        # Marshmallow validation failed (invalid token format)
+        error_message = 'Invalid verification token.'
+        if token_errors:
+            error_message = format_marshmallow_errors(token_errors)
+        registration_logger.warning(f"Token validation failed: {error_message}")
+        return render(request, 'login/verify_result.html', {
+            'success': False,
+            'message': error_message,
+            'show_resend': True
+        })
+    # ========== END RUNTIME VERIFICATION LAYER ==========
+    
+    # Existing verification logic (preserved)
     user_profile = get_object_or_404(UserProfile, verification_token=token)
     
     # Check if token has expired
@@ -339,6 +418,9 @@ def verify_email(request, token):
     user_profile.verification_token = None  # Invalidate token
     user_profile.verification_token_expires = None
     user_profile.save()
+    
+    # Record successful email verification
+    registration_logger.info(f"Email verified successfully for user: {user_profile.user.username}")
     
     # Show different message based on authentication status
     if request.user.is_authenticated and request.user == user_profile.user:
