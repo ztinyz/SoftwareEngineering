@@ -422,7 +422,7 @@ def verify_email(request, token):
     # Record successful email verification
     registration_logger.info(f"Email verified successfully for user: {user_profile.user.username}")
     
-    # Show different message based on authentication status
+    # Show different message based on authentication satatus
     if request.user.is_authenticated and request.user == user_profile.user:
         messages.success(request, 'Email verified successfully! You now have full access.')
         return redirect('login:dash')

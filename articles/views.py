@@ -2,9 +2,34 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
+from django.core.exceptions import ValidationError
+import magic
+from PyPDF2 import PdfReader
+import io
 
 from .models import Article
 from appointments.kafka import publish_event
+
+def validate_pdf(file):
+    MAX_FILE_SIZE = 10 * 1024 * 1024
+    if file.size > MAX_FILE_SIZE:
+        raise ValidationError("File size cannot exceed 10MB.")
+    file.seek(0)
+    mime = magic.from_buffer(file.read(2048), mime=True)
+    file.seek(0)
+    if mime != 'application/pdf':
+        raise ValidationError(f"Invalid file type detected: {mime}")
+    try:
+        file.seek(0)
+        pdf = PdfReader(io.BytesIO(file.read()))
+        file.seek(0)
+        if len(pdf.pages) > 100:
+            raise ValidationError("PDF exceeds maximum of 100 pages.")
+    except ValidationError:
+        raise
+    except Exception as e:
+        raise ValidationError(f"Invalid or corrupted PDF: {str(e)}")
+    return file
 
 def article_list(request):
     qs = Article.objects.select_related("author").all()
@@ -46,7 +71,14 @@ def article_create(request):
         messages.error(request, "Title is required.")
         return redirect("articles:add")
 
-    Article.objects.create(
+    if pdf:
+        try:
+            validate_pdf(pdf)
+        except ValidationError as e:
+            messages.error(request, str(e))
+            return redirect("articles:add")
+
+    article = Article.objects.create(
         title=title,
         category=category,
         summary=summary,
@@ -94,6 +126,11 @@ def article_edit(request, pk: int):
 
     new_pdf = request.FILES.get("pdf")
     if new_pdf:
+        try:
+            validate_pdf(new_pdf)
+        except ValidationError as e:
+            messages.error(request, str(e))
+            return redirect("articles:edit", pk=article.pk)
         article.pdf = new_pdf
 
     if not article.title:

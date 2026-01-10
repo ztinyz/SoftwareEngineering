@@ -172,3 +172,48 @@ INFO 2026-01-09 09:18:35,462 verification_service Marshmallow validation passed 
 INFO 2026-01-09 09:18:35,462 views All validations passed for user: dawdawda
 INFO 2026-01-09 09:18:35,764 registration_state_machine Registration [dawdawda]: Transition 'create_user' from 'marshmallow_validated' to 'user_created'
 INFO 2026-01-09 09:18:38,692 registration_state_machine Registration [dawdawda]: Transition 'send_verification_email' from 'user_created' to 'email_sent'
+INFO 2026-01-10 11:00:23,468 registration_state_machine Registration [nicoleta]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-10 11:00:23,820 registration_state_machine Registration [nicoleta]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-10 11:04:43,821 registration_state_machine Registration [niculae]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-10 11:04:44,260 registration_state_machine Registration [niculae]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-10 11:05:40,906 registration_state_machine Registration [nicoleta]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-10 11:05:41,271 registration_state_machine Registration [nicoleta]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-10 11:11:35,663 registration_state_machine Registration [iuliaprintesa]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-10 11:11:35,960 registration_state_machine Registration [iuliaprintesa]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-10 11:18:22,347 registration_state_machine Registration [mama]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-10 11:18:22,636 registration_state_machine Registration [mama]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-10 12:38:08,392 registration_state_machine Registration [omnou]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-10 12:38:08,726 registration_state_machine Registration [omnou]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+WARNING 2026-01-10 12:38:08,726 verification_service Marshmallow validation failed: {'password': ['Password must contain at least one uppercase letter.', 'Password must contain at least one digit.', 'Password must contain at least one special character.']}
+WARNING 2026-01-10 12:38:08,726 views Marshmallow validation failed for omnou: {'password': ['Password must contain at least one uppercase letter.', 'Password must contain at least one digit.', 'Password must contain at least one special character.']}
+INFO 2026-01-10 12:38:54,493 registration_state_machine Registration [iulia]: Transition 'submit_data' from 'initial' to 'data_submitted'
+WARNING 2026-01-10 12:38:54,759 registration_state_machine Registration [iulia]: FAILED from state 'data_submitted'. Error: Django form validation failed: <ul class="errorlist"><li>username<ul class="errorlist" id="id_username_error"><li>A user with that username already exists.</li></ul></li></ul>
+INFO 2026-01-10 12:40:45,904 registration_state_machine Registration [iuliaaa]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-10 12:40:46,570 registration_state_machine Registration [iuliaaa]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+WARNING 2026-01-10 12:40:46,570 verification_service Marshmallow validation failed: {'email': ["Email 'iulia.mitisor@gmail.com' is already registered."]}
+WARNING 2026-01-10 12:40:46,570 views Marshmallow validation failed for iuliaaa: {'email': ["Email 'iulia.mitisor@gmail.com' is already registered."]}
+INFO 2026-01-10 12:41:25,824 registration_state_machine Registration [macaculjohn]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-10 12:41:26,566 registration_state_machine Registration [macaculjohn]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-10 12:41:26,566 registration_state_machine Registration [macaculjohn]: Transition 'marshmallow_validate' from 'django_validated' to 'marshmallow_validated'
+INFO 2026-01-10 12:41:26,566 verification_service Marshmallow validation passed for user: macaculjohn
+INFO 2026-01-10 12:41:26,566 views All validations passed for user: macaculjohn
+INFO 2026-01-10 12:41:27,024 registration_state_machine Registration [macaculjohn]: Transition 'create_user' from 'marshmallow_validated' to 'user_created'
+INFO 2026-01-10 12:41:33,436 registration_state_machine Registration [macaculjohn]: Transition 'send_verification_email' from 'user_created' to 'email_sent'
+INFO 2026-01-10 12:42:59,246 verification_service Email token verified for user: macaculjohn
+INFO 2026-01-10 12:42:59,259 views Email verified successfully for user: macaculjohn
+INFO 2026-01-10 12:51:38,753 registration_state_machine Registration [macaculdoctor]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-10 12:51:39,175 registration_state_machine Registration [macaculdoctor]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-10 12:51:39,180 registration_state_machine Registration [macaculdoctor]: Transition 'marshmallow_validate' from 'django_validated' to 'marshmallow_validated'
+INFO 2026-01-10 12:51:39,180 verification_service Marshmallow validation passed for user: macaculdoctor
+INFO 2026-01-10 12:51:39,180 views All validations passed for user: macaculdoctor
+INFO 2026-01-10 12:51:39,731 registration_state_machine Registration [macaculdoctor]: Transition 'create_user' from 'marshmallow_validated' to 'user_created'
+INFO 2026-01-10 12:51:43,903 registration_state_machine Registration [macaculdoctor]: Transition 'send_verification_email' from 'user_created' to 'email_sent'
+INFO 2026-01-10 12:52:24,288 verification_service Email token verified for user: macaculdoctor
+INFO 2026-01-10 12:52:24,308 views Email verified successfully for user: macaculdoctor
+INFO 2026-01-10 13:34:38,359 registration_state_machine Registration [gibonuldoctor]: Transition 'submit_data' from 'initial' to 'data_submitted'
+INFO 2026-01-10 13:34:38,709 registration_state_machine Registration [gibonuldoctor]: Transition 'django_validate' from 'data_submitted' to 'django_validated'
+INFO 2026-01-10 13:34:38,709 registration_state_machine Registration [gibonuldoctor]: Transition 'marshmallow_validate' from 'django_validated' to 'marshmallow_validated'
+INFO 2026-01-10 13:34:38,709 verification_service Marshmallow validation passed for user: gibonuldoctor
+INFO 2026-01-10 13:34:38,709 views All validations passed for user: gibonuldoctor
+INFO 2026-01-10 13:34:39,208 registration_state_machine Registration [gibonuldoctor]: Transition 'create_user' from 'marshmallow_validated' to 'user_created'
+INFO 2026-01-10 13:34:41,316 registration_state_machine Registration [gibonuldoctor]: Transition 'send_verification_email' from 'user_created' to 'email_sent'
