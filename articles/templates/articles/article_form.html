@@ -32,6 +32,18 @@
       <h1>{% if mode == "edit" %}Edit{% else %}Add{% endif %} article</h1>
       <div class="muted">Only doctors can create/edit articles. You can only modify your own.</div>
 
+      {% if messages %}
+      <div class="messages">
+          {% for message in messages %}
+          {% if 'validation' in message.tags %}
+          <div class="alert alert-danger">
+              <strong>Upload Error:</strong> {{ message }}
+          </div>
+          {% endif %}
+          {% endfor %}
+      </div>
+      {% endif %}
+
       <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
 

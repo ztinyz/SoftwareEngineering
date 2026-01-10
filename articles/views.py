@@ -18,7 +18,7 @@ def validate_pdf(file):
     mime = magic.from_buffer(file.read(2048), mime=True)
     file.seek(0)
     if mime != 'application/pdf':
-        raise ValidationError(f"Invalid file type detected: {mime}")
+        raise ValidationError(f"Invalid file type detected: {mime}. Please upload a PDF file.")
     try:
         file.seek(0)
         pdf = PdfReader(io.BytesIO(file.read()))
@@ -75,7 +75,9 @@ def article_create(request):
         try:
             validate_pdf(pdf)
         except ValidationError as e:
-            messages.error(request, str(e))
+            storage = messages.get_messages(request)
+            storage.used = True
+            messages.error(request, str(e), extra_tags='validation')
             return redirect("articles:add")
 
     article = Article.objects.create(
