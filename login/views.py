@@ -22,6 +22,13 @@ from .forms.updateform import AccountUpdateForm
 from .forms.captchaform import LoginCaptchaForm, RegisterCaptchaForm
 from .forms.loginform import LoginForm
 
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.auth.models import User
+from django.contrib.messages import get_messages
+from .tasks import send_password_reset_email
+
 # Import runtime verification components (Marshmallow + Transitions)
 from .verification_service import RegistrationVerificationService, format_marshmallow_errors
 
@@ -444,3 +451,91 @@ def Test(request):
         'user': request.user,
         'user_profile': user_profile
     })
+
+
+def password_reset_request(request):
+    """Handle password reset request"""
+    # Clear old messages
+    storage = get_messages(request)
+    for _ in storage:
+        pass
+    
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        
+        try:
+            user = User.objects.get(email=email)
+            
+            # Generate reset token
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            
+            # Build reset link
+            reset_link = request.build_absolute_uri(
+                f'/users/reset-password/{uid}/{token}/'
+            )
+            
+            # Send email synchronously (no Celery needed)
+            subject = 'Password Reset Request'
+            message = f'''
+Hello {user.username},
+
+You requested a password reset. Click the link below to reset your password:
+
+{reset_link}
+
+This link will expire in 1 hour.
+
+If you didn't request this, please ignore this email.
+
+Best regards,
+Clinica Team
+            '''
+            
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                fail_silently=False,
+            )
+            
+            messages.success(request, 'Password reset email sent! Check your inbox.')
+            return redirect('login:login')
+            
+        except User.DoesNotExist:
+            messages.error(request, 'No account found with that email.')
+    
+    return render(request, 'login/password_reset_request.html')
+
+
+def password_reset_confirm(request, uidb64, token):
+    """Confirm password reset and set new password"""
+    # Clear old messages
+    storage = get_messages(request)
+    for _ in storage:
+        pass
+    
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+    
+    if user and default_token_generator.check_token(user, token):
+        if request.method == 'POST':
+            new_password = request.POST.get('password')
+            confirm_password = request.POST.get('confirm_password')
+            
+            if new_password == confirm_password:
+                user.set_password(new_password)
+                user.save()
+                messages.success(request, 'Password reset successful! You can now login.')
+                return redirect('login:login')
+            else:
+                messages.error(request, 'Passwords do not match.')
+        
+        return render(request, 'login/password_reset_confirm.html')
+    else:
+        messages.error(request, 'Invalid or expired reset link.')
+        return redirect('login:login')

@@ -217,3 +217,9 @@ INFO 2026-01-10 13:34:38,709 verification_service Marshmallow validation passed 
 INFO 2026-01-10 13:34:38,709 views All validations passed for user: gibonuldoctor
 INFO 2026-01-10 13:34:39,208 registration_state_machine Registration [gibonuldoctor]: Transition 'create_user' from 'marshmallow_validated' to 'user_created'
 INFO 2026-01-10 13:34:41,316 registration_state_machine Registration [gibonuldoctor]: Transition 'send_verification_email' from 'user_created' to 'email_sent'
+INFO 2026-01-11 13:44:45,880 registration_state_machine Registration [Poc]: Transition 'submit_data' from 'initial' to 'data_submitted'
+WARNING 2026-01-11 13:44:46,599 registration_state_machine Registration [Poc]: FAILED from state 'data_submitted'. Error: Django form validation failed: <ul class="errorlist"><li>password<ul class="errorlist" id="id_password_error"><li>This password is too short. It must contain at least 8 characters.</li></ul></li></ul>
+WARNING 2026-01-11 13:45:46,588 verification_service Marshmallow validation failed: {'password': ['Password must contain at least one uppercase letter.', 'Password must contain at least one digit.', 'Password must contain at least one special character.']}
+WARNING 2026-01-11 13:45:46,588 views Marshmallow validation failed for Poc: {'password': ['Password must contain at least one uppercase letter.', 'Password must contain at least one digit.', 'Password must contain at least one special character.']}
+INFO 2026-01-11 13:47:14,065 verification_service Marshmallow validation passed for user: Poc
+INFO 2026-01-11 13:47:14,066 views All validations passed for user: Poc

@@ -59,7 +59,7 @@
          
                      <i class="ri-eye-off-fill login__icon login__password" id="loginPassword"></i>
                   </div>
-                  <a href="#" class="login__forgot">Forgot your password?</a>
+                  <a href="{% url 'login:password_reset_request' %}" class="login__forgot">Forgot your password?</a>
                   {{ login_captcha_form.hcaptcha }}
                </div>
                
